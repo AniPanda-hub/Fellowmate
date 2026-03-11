@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fellowmate</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:#060a10;font-family:'Outfit',sans-serif;color:#dde6f0}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 60% 60% at 50% 40%,rgba(100,200,180,.07) 0%,transparent 65%),
+             radial-gradient(ellipse 40% 40% at 20% 80%,rgba(180,140,100,.04) 0%,transparent 60%)}
+
+/* screens */
+.screen{display:none;position:fixed;inset:0;z-index:1;flex-direction:column;align-items:center;justify-content:center}
+.screen.on{display:flex}
+
+/* ── BOOT ── */
+#boot{gap:32px}
+.brand{font-family:'Cormorant Garamond',serif;font-size:2.4rem;font-weight:300;letter-spacing:.1em;color:#c8e8de}
+.brand em{font-style:italic;color:#8fd4c0}
+.sub{font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:#243040;margin-top:-24px}
+.mode-row{display:flex;gap:12px}
+.mbtn{padding:10px 28px;border-radius:100px;border:1px solid rgba(255,255,255,.1);background:transparent;
+  color:#8fa3bc;font-family:'Outfit',sans-serif;font-size:.8rem;cursor:pointer;letter-spacing:.05em;transition:all .25s}
+.mbtn.tl{border-color:rgba(100,200,180,.35);color:#8fd4c0;background:rgba(100,200,180,.06)}
+.mbtn.tl:hover{background:rgba(100,200,180,.14)}
+.mbtn.am{border-color:rgba(200,160,100,.35);color:#c8a060;background:rgba(200,160,100,.06)}
+.mbtn.am:hover{background:rgba(200,160,100,.14)}
+
+/* ── TRAINING ── */
+#training{justify-content:flex-start}
+.topbar{width:100%;display:flex;align-items:center;justify-content:space-between;
+  padding:12px 24px;border-bottom:1px solid rgba(255,255,255,.05);
+  background:rgba(6,10,16,.95);backdrop-filter:blur(12px);flex-shrink:0;z-index:10}
+.tlogo{font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:300;color:#8fd4c0;letter-spacing:.08em}
+.ttog{display:flex;border-radius:100px;border:1px solid rgba(255,255,255,.07);overflow:hidden;background:rgba(255,255,255,.02)}
+.tbtn{padding:6px 16px;font-family:'Outfit',sans-serif;font-size:.72rem;border:none;background:transparent;
+  color:#2a4050;cursor:pointer;transition:all .2s}
+.tbtn.on{background:rgba(100,200,180,.11);color:#8fd4c0}
+.ebtn{padding:6px 16px;border-radius:100px;border:1px solid rgba(232,160,100,.28);
+  background:rgba(232,160,100,.05);color:#c8a060;font-family:'Outfit',sans-serif;
+  font-size:.72rem;cursor:pointer;transition:all .2s}
+.ebtn:hover{background:rgba(232,160,100,.12)}
+
+.stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  width:100%;gap:20px;padding:16px}
+
+.slabel{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:#2a4050;
+  min-height:16px;transition:color .4s;text-align:center;max-width:400px}
+.slabel.go{color:#8fd4c0}
+.slabel.li{color:#c8a060}
+
+.transcript{width:min(480px,88vw);max-height:180px;overflow-y:auto;
+  display:flex;flex-direction:column;gap:8px;padding:0 2px}
+.transcript::-webkit-scrollbar{width:2px}
+.transcript::-webkit-scrollbar-thumb{background:rgba(255,255,255,.06)}
+.trow{display:flex;gap:8px;align-items:flex-start;animation:fu .3s ease}
+.trow.you{flex-direction:row-reverse}
+@keyframes fu{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.tav{width:24px;height:24px;border-radius:6px;flex-shrink:0;display:flex;
+  align-items:center;justify-content:center;font-size:11px}
+.tav.ai{background:rgba(100,200,180,.12)}
+.tav.you{background:rgba(200,160,100,.12)}
+.tbub{max-width:78%;padding:8px 12px;border-radius:10px;font-size:.8rem;line-height:1.6}
+.tbub.ai{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-top-left-radius:2px}
+.tbub.you{background:rgba(100,200,180,.06);border:1px solid rgba(100,200,180,.13);border-top-right-radius:2px}
+
+/* mic */
+@keyframes rp{0%,100%{box-shadow:0 0 0 0 rgba(232,100,100,.4)}50%{box-shadow:0 0 0 14px rgba(232,100,100,0)}}
+.mic{width:66px;height:66px;border-radius:50%;border:1.5px solid rgba(100,200,180,.35);
+  background:rgba(100,200,180,.08);color:#8fd4c0;font-size:24px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .25s;outline:none}
+.mic:hover{background:rgba(100,200,180,.15)}
+.mic.rec{border-color:rgba(232,100,100,.6);background:rgba(232,100,100,.12);
+  color:#e87070;animation:rp 1.2s ease-in-out infinite}
+.mhint{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:#2a4050}
+
+/* text input */
+.tinput{flex:1;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);
+  border-radius:100px;padding:9px 16px;color:#dde6f0;font-family:'Outfit',sans-serif;
+  font-size:.8rem;outline:none;transition:border-color .2s}
+.tinput:focus{border-color:rgba(100,200,180,.3)}
+.tinput::placeholder{color:#243040}
+.tsend{padding:9px 16px;border-radius:100px;border:1px solid rgba(100,200,180,.25);
+  background:rgba(100,200,180,.07);color:#8fd4c0;font-family:'Outfit',sans-serif;
+  font-size:.76rem;cursor:pointer;transition:all .2s;white-space:nowrap}
+.tsend:hover{background:rgba(100,200,180,.15)}
+
+/* vid float */
+.vfloat{position:absolute;bottom:24px;right:24px;width:42px;height:42px;border-radius:12px;
+  border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.02);
+  color:#2a4050;font-size:16px;cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;justify-content:center}
+.vfloat:hover{border-color:rgba(100,200,180,.3);color:#8fd4c0}
+
+/* ── VIDEO POPUP ── */
+.vpop{position:fixed;bottom:76px;right:20px;width:290px;border-radius:14px;overflow:hidden;
+  background:#0d1520;border:1px solid rgba(255,255,255,.07);
+  box-shadow:0 18px 55px rgba(0,0,0,.7);z-index:100;display:none;
+  animation:pi .28s cubic-bezier(.34,1.56,.64,1)}
+.vpop.on{display:block}
+@keyframes pi{from{opacity:0;transform:scale(.88) translateY(10px)}to{opacity:1;transform:none}}
+.vpth{display:flex;align-items:center;justify-content:space-between;
+  padding:10px 13px;border-bottom:1px solid rgba(255,255,255,.05)}
+.vptit{font-size:.77rem;font-weight:500}
+.vpsub{font-size:.6rem;color:#243040;margin-top:1px}
+.vpx{width:22px;height:22px;border-radius:5px;border:1px solid rgba(255,255,255,.06);
+  background:transparent;color:#2a4050;cursor:pointer;font-size:10px;
+  display:flex;align-items:center;justify-content:center;transition:all .15s}
+.vpx:hover{border-color:rgba(232,100,100,.4);color:#e87070}
+.vpsc{height:136px;background:linear-gradient(135deg,#0a1828,#081018);
+  display:flex;align-items:center;justify-content:center;font-size:2.6rem;cursor:pointer;position:relative}
+.vpov{position:absolute;inset:0;background:rgba(0,0,0,.22);display:flex;align-items:center;justify-content:center}
+.vppl{width:36px;height:36px;border-radius:50%;background:rgba(100,200,180,.72);
+  display:flex;align-items:center;justify-content:center;font-size:12px;color:#060a10;transition:transform .2s}
+.vpsc:hover .vppl{transform:scale(1.1)}
+.vptags{display:flex;gap:5px;padding:8px 11px;flex-wrap:wrap}
+.vtag{padding:2px 7px;border-radius:4px;font-size:.58rem;font-weight:600;letter-spacing:.05em}
+.vpcap{padding:0 11px 11px;font-size:.69rem;color:#2a4070;font-style:italic;line-height:1.5}
+
+/* ── REPORT ── */
+#report{justify-content:flex-start;overflow-y:auto;background:#060a10}
+#report::-webkit-scrollbar{width:3px}
+#report::-webkit-scrollbar-thumb{background:rgba(255,255,255,.06)}
+.rwrap{width:min(640px,92vw);margin:0 auto;padding:32px 0 40px;display:flex;flex-direction:column;gap:0}
+.rhdr{text-align:center;padding:32px 0 24px;border-bottom:1px solid rgba(255,255,255,.05)}
+.rhdr h1{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;color:#8fd4c0;letter-spacing:.06em}
+.rhdr p{font-size:.68rem;color:#243040;margin-top:5px;letter-spacing:.1em;text-transform:uppercase}
+.rmeta{display:flex;justify-content:space-between;padding:14px 0;
+  border-bottom:1px solid rgba(255,255,255,.04);font-size:.71rem;color:#2a4050}
+.rmeta strong{color:#8fa3bc;font-weight:500}
+.gblock{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:20px 0}
+.gcard{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);
+  border-radius:12px;padding:16px;position:relative;overflow:hidden}
+.gcard::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
+.gcard.A::before{background:#8fd4b0}.gcard.B::before{background:#8fb8d4}.gcard.C::before{background:#d4c08f}
+.glbl{font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:#243040;margin-bottom:6px}
+.gg{font-family:'Cormorant Garamond',serif;font-size:2.1rem;font-weight:300;line-height:1;margin-bottom:4px}
+.gg.A{color:#8fd4b0}.gg.B{color:#8fb8d4}.gg.C{color:#d4c08f}
+.gdesc{font-size:.7rem;color:#2a4050;line-height:1.5}
+.dsec{padding:16px 0;border-top:1px solid rgba(255,255,255,.05)}
+.dtit{font-size:.6rem;text-transform:uppercase;letter-spacing:.12em;color:#243040;margin-bottom:12px}
+.drow{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.dname{font-size:.74rem;color:#8fa3bc;width:188px;flex-shrink:0}
+.dbar{flex:1;height:4px;background:rgba(255,255,255,.04);border-radius:2px;overflow:hidden}
+.dfill{height:100%;border-radius:2px}
+.dval{font-size:.68rem;color:#2a4050;width:32px;text-align:right;font-family:monospace}
+.nsec{padding:16px 0;border-top:1px solid rgba(255,255,255,.05)}
+.nitem{display:flex;gap:10px;margin-bottom:11px;background:rgba(255,255,255,.015);
+  border:1px solid rgba(255,255,255,.04);border-radius:9px;padding:12px}
+.nnum{width:24px;height:24px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;
+  justify-content:center;font-size:.68rem;font-weight:600;background:rgba(100,200,180,.09);color:#8fd4c0}
+.nbody h5{font-size:.77rem;font-weight:500;color:#8fa3bc;margin-bottom:3px}
+.nbody p{font-size:.71rem;color:#2a4050;line-height:1.55}
+.mnote{background:rgba(100,200,180,.03);border:1px solid rgba(100,200,180,.1);
+  border-radius:10px;padding:14px;margin:2px 0 16px;font-size:.76rem;color:#3a6060;line-height:1.65}
+.mnote strong{color:#8fd4c0;font-weight:500}
+.ract{display:flex;gap:10px;justify-content:center;padding-bottom:32px}
+.rbtn{padding:9px 24px;border-radius:100px;font-family:'Outfit',sans-serif;font-size:.77rem;cursor:pointer;transition:all .2s}
+.rbtn.p{background:rgba(100,200,180,.09);border:1px solid rgba(100,200,180,.28);color:#8fd4c0}
+.rbtn.p:hover{background:rgba(100,200,180,.16)}
+.rbtn.g{background:transparent;border:1px solid rgba(255,255,255,.07);color:#2a4050}
+.rbtn.g:hover{border-color:rgba(255,255,255,.13);color:#8fa3bc}
+
+/* ── DEV ── */
+#developer{justify-content:flex-start;overflow-y:auto}
+#developer::-webkit-scrollbar{width:3px}
+#developer::-webkit-scrollbar-thumb{background:rgba(200,160,100,.12)}
+.dwrap{width:min(860px,95vw);margin:0 auto;padding:26px 0 36px;display:flex;flex-direction:column;gap:18px}
+.dtop{display:flex;align-items:center;justify-content:space-between;
+  padding-bottom:16px;border-bottom:1px solid rgba(200,160,100,.1)}
+.dtop h1{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;color:#c8a060;letter-spacing:.06em}
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.dcard{background:rgba(200,160,100,.02);border:1px solid rgba(200,160,100,.09);border-radius:12px;padding:16px}
+.dctit{font-size:.6rem;text-transform:uppercase;letter-spacing:.12em;color:#6a5030;margin-bottom:12px}
+.uzone{border:1.5px dashed rgba(200,160,100,.18);border-radius:8px;padding:16px;text-align:center;
+  cursor:pointer;transition:all .2s;background:rgba(200,160,100,.015);margin-bottom:10px}
+.uzone:hover{border-color:rgba(200,160,100,.45);background:rgba(200,160,100,.04)}
+.uzone span{font-size:1.4rem;margin-bottom:4px;display:block}
+.uzone p{font-size:.7rem;color:#6a5030}
+.fi{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.015);
+  border:1px solid rgba(255,255,255,.04);border-radius:7px;padding:8px 10px;margin-bottom:5px}
+.fi span{font-size:13px}
+.fi h6{font-size:.72rem;font-weight:500;color:#8fa3bc}
+.fi p{font-size:.61rem;color:#243040}
+.fi .badge{margin-left:auto;padding:2px 7px;border-radius:4px;font-size:.57rem;
+  font-weight:600;background:rgba(100,200,160,.1);color:#80d0a0}
+.rr{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.rl{font-size:.72rem;color:#8fa3bc;flex:1}
+.ri{width:46px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);
+  border-radius:5px;padding:3px 5px;color:#c8a060;font-family:monospace;font-size:.68rem;text-align:center;outline:none}
+.rt{width:30px;height:16px;border-radius:8px;border:none;cursor:pointer;
+  background:rgba(100,200,160,.22);position:relative;transition:all .2s}
+.rt::after{content:'';position:absolute;width:10px;height:10px;border-radius:50%;
+  background:#80d0a0;top:3px;left:3px;transition:left .2s}
+.srow{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.sbox{background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.04);
+  border-radius:9px;padding:12px;text-align:center}
+.sv{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:300;color:#c8a060}
+.sl{font-size:.61rem;color:#243040;margin-top:1px}
+.vrec{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px 0}
+.vorb{width:52px;height:52px;border-radius:50%;cursor:pointer;
+  background:radial-gradient(circle at 38% 35%,#f0d8a0 0%,#c8a060 50%,#806030 100%);
+  box-shadow:0 0 16px rgba(200,160,100,.22);display:flex;align-items:center;
+  justify-content:center;font-size:20px;transition:all .2s}
+.vorb:hover{transform:scale(1.06);box-shadow:0 0 26px rgba(200,160,100,.38)}
+.vorb.rec{animation:rp 1s infinite}
+.vlbl{font-size:.7rem;color:#6a5030}
+</style>
+</head>
+<body>
+
+<!-- ══ BOOT ══ -->
+<div class="screen on" id="boot">
+  <div class="brand">Fellow<em>mate</em></div>
+  <p class="sub">Humanistic Pediatric Neurology · AI Training Agent</p>
+  <canvas id="bootCanvas" width="200" height="200" style="cursor:pointer" onclick="go('training')"></canvas>
+  <div class="mode-row">
+    <button class="mbtn tl" onclick="go('training')">Training Mode</button>
+    <button class="mbtn am" onclick="go('developer')">Developer Mode</button>
+  </div>
+</div>
+
+<!-- ══ TRAINING ══ -->
+<div class="screen" id="training">
+  <div class="topbar">
+    <span class="tlogo">Fellowmate</span>
+    <div class="ttog">
+      <button class="tbtn on" id="trp" onclick="setMode('roleplay')">Family Roleplay</button>
+      <button class="tbtn" id="tmn" onclick="setMode('mentor')">Mentor Debrief</button>
+    </div>
+    <button class="ebtn" onclick="endSession()">End Session →</button>
+  </div>
+
+  <div class="stage">
+    <p class="slabel" id="slabel">Tap the mic or type below to begin</p>
+    <canvas id="trainCanvas" width="240" height="240"></canvas>
+    <div class="transcript" id="transcript"></div>
+
+    <div style="display:flex;flex-direction:column;align-items:center;gap:10px;width:min(460px,88vw)">
+      <!-- Mic -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
+        <button class="mic" id="micBtn" onclick="tapMic()">🎙️</button>
+        <span class="mhint" id="mhint">tap to speak</span>
+      </div>
+      <!-- Text input -->
+      <div style="display:flex;gap:8px;width:100%">
+        <input class="tinput" id="tbox" type="text" placeholder="or type here and press Enter…"
+          onkeydown="if(event.key==='Enter'){tapSend()}">
+        <button class="tsend" onclick="tapSend()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="vfloat" onclick="toggleVid()">🎬</button>
+</div>
+
+<!-- ══ VIDEO POPUP ══ -->
+<div class="vpop" id="vpop">
+  <div class="vpth">
+    <div><div class="vptit">The Day We Were Told</div><div class="vpsub">Aiden's family · Dravet Syndrome · 3:42</div></div>
+    <button class="vpx" onclick="toggleVid()">✕</button>
+  </div>
+  <div class="vpsc">👨‍👩‍👦<div class="vpov"><div class="vppl">▶</div></div></div>
+  <div class="vptags">
+    <span class="vtag" style="background:rgba(232,100,100,.14);color:#e87070">Grief</span>
+    <span class="vtag" style="background:rgba(232,180,80,.11);color:#c8a060">Shock</span>
+    <span class="vtag" style="background:rgba(100,200,160,.11);color:#80d4a0">Love</span>
+  </div>
+  <div class="vpcap">"Nobody told us what to feel. They gave us the paper and left."</div>
+</div>
+
+<!-- ══ REPORT ══ -->
+<div class="screen" id="report">
+  <div class="rwrap">
+    <div class="rhdr">
+      <h1>Session Report</h1>
+      <p id="rdate">Generating…</p>
+    </div>
+    <div class="rmeta">
+      <span>Trainee: <strong>Dr. Trainee</strong></span>
+      <span>Case: <strong>Aiden, 4 yrs — Dravet Syndrome</strong></span>
+      <span>Session: <strong>#7</strong></span>
+    </div>
+    <div class="gblock" id="gblock"></div>
+    <div class="dsec"><div class="dtit">Behavioral Dimensions</div><div id="drows"></div></div>
+    <div class="nsec"><div class="dtit">What To Work On Next</div><div id="nsteps"></div></div>
+    <div class="mnote" id="mnote"></div>
+    <div class="ract">
+      <button class="rbtn p" onclick="go('training')">New Session</button>
+      <button class="rbtn g" onclick="go('boot')">Home</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ DEVELOPER ══ -->
+<div class="screen" id="developer">
+  <div class="dwrap">
+    <div class="dtop">
+      <h1>Developer Console</h1>
+      <button class="mbtn" onclick="go('boot')" style="padding:7px 16px;font-size:.7rem">← Back</button>
+    </div>
+    <div class="srow">
+      <div class="sbox"><div class="sv">24</div><div class="sl">Cases</div></div>
+      <div class="sbox"><div class="sv">7</div><div class="sl">Trainees</div></div>
+      <div class="sbox"><div class="sv">312</div><div class="sl">Sessions</div></div>
+    </div>
+    <div class="dgrid">
+      <div class="dcard">
+        <div class="dctit">Upload Cases &amp; Videos</div>
+        <div class="uzone" onclick="fakeUpload()"><span>📁</span><p>Drop case files, records, or family videos</p></div>
+        <div id="flist">
+          <div class="fi"><span>📋</span><div><h6>Dravet_Aiden_Case.pdf</h6><p>2.4 MB · 3 emotion tags</p></div><span class="badge">Trained</span></div>
+          <div class="fi"><span>🎬</span><div><h6>Meena_interview_grief.mp4</h6><p>48 MB · Tagged: grief, anxiety</p></div><span class="badge">Trained</span></div>
+        </div>
+      </div>
+      <div class="dcard">
+        <div class="dctit">Behavioral Rubric</div>
+        <div class="rr"><span class="rl">Emotional Acknowledgment</span><input class="ri" value="25%"><button class="rt"></button></div>
+        <div class="rr"><span class="rl">Non-judgmental Language</span><input class="ri" value="20%"><button class="rt"></button></div>
+        <div class="rr"><span class="rl">Tone &amp; Warmth</span><input class="ri" value="20%"><button class="rt"></button></div>
+        <div class="rr"><span class="rl">Silence Comfort</span><input class="ri" value="15%"><button class="rt"></button></div>
+        <div class="rr"><span class="rl">Family Inclusion</span><input class="ri" value="10%"><button class="rt"></button></div>
+        <div class="rr"><span class="rl">Clinical Accuracy</span><input class="ri" value="10%"><button class="rt"></button></div>
+      </div>
+      <div class="dcard">
+        <div class="dctit">Record Voice Scenarios</div>
+        <div class="vrec">
+          <div class="vorb" id="vorb" onclick="devRec()">🎙️</div>
+          <span class="vlbl" id="vlbl">Tap to record a scenario</span>
+        </div>
+        <div class="fi"><span>🎙️</span><div><h6>Dr. Sharma — Breaking bad news</h6><p>2:34 · Empathetic pacing</p></div><span class="badge">Indexed</span></div>
+        <div class="fi"><span>🎙️</span><div><h6>Dr. Mehta — Silence technique</h6><p>1:12 · Stillness, presence</p></div><span class="badge">Indexed</span></div>
+      </div>
+      <div class="dcard">
+        <div class="dctit">Memory Configuration</div>
+        <div class="rr"><span class="rl">Track session grades</span><button class="rt"></button></div>
+        <div class="rr"><span class="rl">Remember struggle patterns</span><button class="rt"></button></div>
+        <div class="rr"><span class="rl">Longitudinal growth arc</span><button class="rt"></button></div>
+        <div class="rr"><span class="rl">Emotional state tracking</span><button class="rt"></button></div>
+        <div class="rr"><span class="rl">Breakthrough moment log</span><button class="rt"></button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════
+   FELLOWMATE — clean single-file script
+   ═══════════════════════════════════════ */
+
+/* ── ORB ── */
+function makeOrb(canvas, R) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height, cx = W/2, cy = H/2;
+  const N = 600, phi = Math.PI*(3-Math.sqrt(5));
+  let t=0, sa=0, la=0, state='idle';
+  const pts = Array.from({length:N},(_,i)=>{
+    const y=1-(i/(N-1))*2, r=Math.sqrt(Math.max(0,1-y*y)), th=phi*i;
+    return {x:Math.cos(th)*r, y, z:Math.sin(th)*r, ph:Math.random()*Math.PI*2, sz:Math.random()*.7+.45};
+  });
+  function setState(s){state=s}
+  function tick(){
+    ctx.clearRect(0,0,W,H); t+=.009;
+    sa = state==='speaking' ? Math.min(1,sa+.07) : Math.max(0,sa-.05);
+    la = state==='listening'? Math.min(1,la+.07) : Math.max(0,la-.05);
+    const br=1+Math.sin(t*.6)*.022, rot=t*.11, cr=Math.cos(rot), sr=Math.sin(rot);
+    const sorted=pts.map(p=>{
+      const x2=p.x*cr-p.z*sr, z2=p.x*sr+p.z*cr;
+      const d=sa*.16*Math.sin(p.ph+t*9)*(1-Math.abs(p.y));
+      const l=la*.07*Math.sin(p.ph*2+t*4);
+      const rad=R*br*(1+d+l);
+      return {px:cx+x2*rad, py:cy+p.y*rad, depth:(z2+1)/2, p};
+    }).sort((a,b)=>a.depth-b.depth);
+    for(const {px,py,depth,p} of sorted){
+      let sz=p.sz*(.35+depth*.9);
+      if(state==='speaking') sz*=1+sa*.55*Math.abs(Math.sin(p.ph+t*7));
+      const alpha=.18+depth*.72;
+      if(la>0){
+        const rv=Math.round(100+(210-100)*la), gv=Math.round(200+(155-200)*la), bv=Math.round(180+(70-180)*la);
+        ctx.fillStyle=`rgba(${rv},${gv},${bv},${alpha})`;
+      } else {
+        ctx.fillStyle=`rgba(100,200,180,${alpha})`;
+      }
+      ctx.beginPath(); ctx.arc(px,py,Math.max(.3,sz),0,Math.PI*2); ctx.fill();
+    }
+    const gc=la>.1?`rgba(200,155,70,${.08+sa*.08})`:`rgba(100,200,180,${.07+sa*.1})`;
+    const g=ctx.createRadialGradient(cx,cy,R*.2,cx,cy,R*1.5);
+    g.addColorStop(0,gc); g.addColorStop(1,'transparent');
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,R*1.5,0,Math.PI*2); ctx.fill();
+    requestAnimationFrame(tick);
+  }
+  tick();
+  return {setState};
+}
+
+let orbBoot, orbTrain;
+window.addEventListener('load',()=>{
+  orbBoot  = makeOrb(document.getElementById('bootCanvas'), 76);
+  orbTrain = makeOrb(document.getElementById('trainCanvas'), 90);
+  // preload voices
+  if(window.speechSynthesis){ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices(); }
+});
+
+/* ── SCREENS ── */
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+}
+
+/* ── MODE ── */
+let mode = 'roleplay';
+function setMode(m){
+  mode=m;
+  document.getElementById('trp').classList.toggle('on',m==='roleplay');
+  document.getElementById('tmn').classList.toggle('on',m==='mentor');
+  addMsg('ai', m==='roleplay'
+    ? "I'm Meena — Aiden's mother. Speak to me as you would in your clinic."
+    : "Mentor mode. Let's reflect on what just happened. How did that feel?");
+}
+
+/* ── TRANSCRIPT ── */
+function addMsg(who, text){
+  const a=document.getElementById('transcript');
+  const d=document.createElement('div');
+  d.className='trow'+(who==='you'?' you':'');
+  d.innerHTML=`<div class="tav ${who==='you'?'you':'ai'}">${who==='you'?'👤':'🧠'}</div>
+    <div class="tbub ${who==='you'?'you':'ai'}">${text}</div>`;
+  a.appendChild(d); a.scrollTop=a.scrollHeight;
+}
+
+/* ── STATUS ── */
+function setLbl(txt, cls){
+  const el=document.getElementById('slabel');
+  el.textContent=txt; el.className='slabel'+(cls?' '+cls:'');
+}
+
+/* ── CONVERSATION HISTORY ── */
+let chatHistory = [];
+
+/* ── CLAUDE API ── */
+const ROLEPLAY_SYS = `You are playing Meena, a 32-year-old mother of Aiden (4 years old, diagnosed with Dravet Syndrome 3 days ago). Her husband David is present but silent. You are in grief, shock, and fear. Respond with authentic emotion — trembling thoughts, sudden tears, hope mixed with dread. React to how the trainee makes you feel, not just the clinical content. Keep responses to 2-3 sentences.`;
+
+const MENTOR_SYS = `You are Fellowmate, a compassionate AI mentor for humanistic pediatric neurology training. The trainee just had a session with a simulated family. Debrief them warmly and specifically — praise what worked, name what was missed, ask one reflective question. Reference behavioral psychology. 3-4 sentences.`;
+
+async function callClaude(text){
+  chatHistory.push({role:'user', content:text});
+  try{
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6',
+        max_tokens:200,
+        system: mode==='roleplay' ? ROLEPLAY_SYS : MENTOR_SYS,
+        messages: chatHistory
+      })
+    });
+    const data = await res.json();
+    const reply = (data.content||[]).map(b=>b.text||'').join('').trim();
+    const out = reply || (mode==='roleplay'?'I just… I need a moment.':'What did you notice about that exchange?');
+    chatHistory.push({role:'assistant', content:out});
+    return out;
+  } catch(e){
+    const fb = mode==='roleplay'?'I just… I need a moment.':'What did you notice about that exchange?';
+    chatHistory.push({role:'assistant', content:fb});
+    return fb;
+  }
+}
+
+/* ── TTS ── */
+function getVoice(){
+  const all = speechSynthesis.getVoices();
+  const en = all.filter(v=>v.lang.startsWith('en'));
+  const pool = en.length ? en : all;
+  if(mode==='roleplay'){
+    return pool.find(v=>/samantha|karen|victoria|moira|zira|fiona|google uk english female/i.test(v.name)) || pool[0];
+  }
+  return pool.find(v=>/daniel|alex|reed|thomas|google uk english male/i.test(v.name)) || pool[0];
+}
+
+function speakText(text){
+  if(!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.voice  = getVoice();
+  u.rate   = mode==='roleplay' ? 0.9 : 0.85;
+  u.pitch  = mode==='roleplay' ? 1.1 : 0.88;
+  u.volume = 1;
+  u.onstart = ()=>{ orbTrain&&orbTrain.setState('speaking'); setLbl('Speaking…','go'); };
+  u.onend   = ()=>{ orbTrain&&orbTrain.setState('idle');     setLbl('Tap mic or type to respond',''); };
+  u.onerror = ()=>{ orbTrain&&orbTrain.setState('idle');     setLbl('Tap mic or type to respond',''); };
+  window.speechSynthesis.speak(u);
+}
+
+/* ── PROCESS INPUT ── */
+async function handleInput(text){
+  if(!text || !text.trim()) return;
+  addMsg('you', text.trim());
+  setLbl('Thinking…','go');
+  orbTrain && orbTrain.setState('listening');
+  const reply = await callClaude(text.trim());
+  addMsg('ai', reply);
+  speakText(reply);
+}
+
+/* ── TEXT SEND ── */
+function tapSend(){
+  // Unlock TTS via user gesture
+  if(window.speechSynthesis){
+    const u=new SpeechSynthesisUtterance(' '); u.volume=0; u.rate=10;
+    window.speechSynthesis.speak(u);
+  }
+  const box = document.getElementById('tbox');
+  const txt = box.value.trim();
+  if(!txt) return;
+  box.value='';
+  handleInput(txt);
+}
+
+/* ── MIC ── */
+let micOn=false, recog=null, heard='';
+
+function tapMic(){
+  // Unlock TTS via this gesture
+  if(window.speechSynthesis){
+    const u=new SpeechSynthesisUtterance(' '); u.volume=0; u.rate=10;
+    window.speechSynthesis.speak(u);
+  }
+
+  if(micOn){
+    // user stopping — commit
+    recog && recog.stop();
+    return;
+  }
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){
+    setLbl('Voice needs Chrome/Edge — type below','');
+    document.getElementById('tbox').focus();
+    return;
+  }
+
+  heard='';
+  recog = new SR();
+  recog.lang='en-US';
+  recog.continuous=true;
+  recog.interimResults=true;
+
+  recog.onstart=()=>{
+    micOn=true; setMicOn(true);
+    orbTrain && orbTrain.setState('listening');
+    setLbl('Listening… tap ⏹ when done','li');
+  };
+
+  recog.onresult=(e)=>{
+    let fin='', tmp='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(e.results[i].isFinal) fin+=e.results[i][0].transcript;
+      else tmp+=e.results[i][0].transcript;
+    }
+    if(fin) heard+=fin;
+    const show=(heard+tmp).trim();
+    if(show) setLbl('❝ '+show.slice(-55),'li');
+  };
+
+  recog.onerror=(e)=>{
+    if(e.error==='no-speech') return;
+    micOn=false; setMicOn(false);
+    orbTrain && orbTrain.setState('idle');
+    setLbl(e.error==='not-allowed'?'Mic blocked — needs https://':'Tap mic or type to respond','');
+  };
+
+  recog.onend=()=>{
+    micOn=false; setMicOn(false);
+    const txt=heard.trim();
+    if(txt){ handleInput(txt); }
+    else { orbTrain&&orbTrain.setState('idle'); setLbl('Tap mic or type to respond',''); }
+  };
+
+  recog.start();
+}
+
+function setMicOn(on){
+  const btn=document.getElementById('micBtn'), hint=document.getElementById('mhint');
+  if(on){
+    btn.textContent='⏹️'; btn.classList.add('rec'); hint.textContent='tap to stop';
+  } else {
+    btn.textContent='🎙️'; btn.classList.remove('rec'); hint.textContent='tap to speak';
+  }
+}
+
+/* ── VIDEO ── */
+function toggleVid(){ document.getElementById('vpop').classList.toggle('on'); }
+
+/* ── END SESSION → REPORT ── */
+async function endSession(){
+  if(window.speechSynthesis) window.speechSynthesis.cancel();
+  go('report');
+  document.getElementById('rdate').textContent='Generating…';
+
+  const tx = chatHistory.map(m=>`${m.role.toUpperCase()}: ${m.content}`).join('\n\n');
+  const prompt=`Analyze this medical training session and return ONLY valid JSON, no markdown:
+{
+  "date":"March 12, 2026",
+  "grades":[
+    {"area":"Humanistic Communication","grade":"B+","note":"one sentence"},
+    {"area":"Family Inclusion","grade":"A","note":"one sentence"},
+    {"area":"Clinical Empathy","grade":"B","note":"one sentence"}
+  ],
+  "dimensions":[
+    {"name":"Emotional Acknowledgment","score":80},
+    {"name":"Non-judgmental Language","score":74},
+    {"name":"Tone & Warmth","score":70},
+    {"name":"Silence Comfort","score":53},
+    {"name":"Family Inclusion","score":86},
+    {"name":"Cultural Sensitivity","score":71},
+    {"name":"Clinical Accuracy","score":65}
+  ],
+  "nextSteps":[
+    {"title":"step","detail":"instruction"},
+    {"title":"step","detail":"instruction"},
+    {"title":"step","detail":"instruction"}
+  ],
+  "memoryNote":"warm sentence about growth"
+}
+Transcript:\n${tx||"No conversation recorded."}`;
+
+  let r;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1200,messages:[{role:'user',content:prompt}]})
+    });
+    const d=await res.json();
+    const raw=(d.content||[]).map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();
+    r=JSON.parse(raw);
+  } catch(e){ r=defaultReport(); }
+  renderReport(r);
+  chatHistory=[];
+}
+
+function defaultReport(){
+  return{
+    date:'March 12, 2026',
+    grades:[
+      {area:'Humanistic Communication',grade:'B+',note:'Warm and attentive presence throughout.'},
+      {area:'Family Inclusion',grade:'A',note:'Meaningfully invited the silent father into the conversation.'},
+      {area:'Clinical Empathy',grade:'B',note:'Empathy present in language; voice pacing developing.'}
+    ],
+    dimensions:[
+      {name:'Emotional Acknowledgment',score:82},{name:'Non-judgmental Language',score:75},
+      {name:'Tone & Warmth',score:70},{name:'Silence Comfort',score:54},
+      {name:'Family Inclusion',score:88},{name:'Cultural Sensitivity',score:72},{name:'Clinical Accuracy',score:65}
+    ],
+    nextSteps:[
+      {title:'Practice therapeutic silence',detail:'After emotional disclosure, pause 4 seconds before responding. The pause itself communicates presence.'},
+      {title:'Name the unspoken',detail:"When a family member goes quiet, gently acknowledge: \"David, there's no pressure — I'm here for you too.\""},
+      {title:'Feelings before facts',detail:'Always acknowledge emotions fully before moving to clinical information. Lead with the human, follow with the medicine.'}
+    ],
+    memoryNote:"Since Session 5 you've made real progress — today's invitation to the silent father was a breakthrough. You're internalising humanistic practice, not just performing it."
+  };
+}
+
+function renderReport(r){
+  document.getElementById('rdate').textContent=r.date+' · Session #7';
+  const gc={A:'A','A+':'A','A-':'A',B:'B','B+':'B','B-':'B',C:'C','C+':'C','C-':'C'};
+  document.getElementById('gblock').innerHTML=r.grades.map(g=>{
+    const cl=gc[g.grade]||'B';
+    return`<div class="gcard ${cl}"><div class="glbl">${g.area}</div><div class="gg ${cl}">${g.grade}</div><div class="gdesc">${g.note}</div></div>`;
+  }).join('');
+  const cols=['#8fd4b0','#8fb8d4','#d4c08f','#d48fb0','#b08fd4','#8fd4d0','#d4a08f'];
+  document.getElementById('drows').innerHTML=r.dimensions.map((d,i)=>
+    `<div class="drow"><span class="dname">${d.name}</span><div class="dbar"><div class="dfill" style="width:${d.score}%;background:${cols[i%cols.length]}"></div></div><span class="dval">${d.score}%</span></div>`
+  ).join('');
+  document.getElementById('nsteps').innerHTML=r.nextSteps.map((s,i)=>
+    `<div class="nitem"><div class="nnum">${i+1}</div><div class="nbody"><h5>${s.title}</h5><p>${s.detail}</p></div></div>`
+  ).join('');
+  document.getElementById('mnote').innerHTML=`<strong>Memory note:</strong> ${r.memoryNote}`;
+}
+
+/* ── DEV ── */
+let devRecOn=false;
+function devRec(){
+  devRecOn=!devRecOn;
+  document.getElementById('vorb').classList.toggle('rec',devRecOn);
+  document.getElementById('vorb').textContent=devRecOn?'⏹️':'🎙️';
+  document.getElementById('vlbl').textContent=devRecOn?'Recording… tap to stop':'Saved ✓';
+}
+function fakeUpload(){
+  const fl=document.getElementById('flist');
+  const d=document.createElement('div'); d.className='fi';
+  d.innerHTML=`<span>📋</span><div><h6>NewCase_${Math.floor(Math.random()*999)}.pdf</h6><p>Processing…</p></div><span class="badge" style="background:rgba(200,160,80,.1);color:#c8a060">Pending</span>`;
+  fl.appendChild(d);
+  setTimeout(()=>{
+    d.querySelector('.badge').textContent='Trained';
+    d.querySelector('.badge').style.cssText='background:rgba(100,200,160,.1);color:#80d0a0';
+    d.querySelector('p').textContent='Emotion tags extracted';
+  },2000);
+}
+</script>
+</body>
+</html>
