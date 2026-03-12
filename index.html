@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fellowmate — Humanistic Pediatric Neurology Training</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:#060a10;font-family:'Outfit',sans-serif;color:#dde6f0}
+:root{
+  --teal:#8fd4c0;--teal-dim:rgba(100,200,180,.08);--teal-b:rgba(100,200,180,.22);
+  --amber:#c8a060;--amber-dim:rgba(200,160,100,.08);--amber-b:rgba(200,160,100,.22);
+  --red:#e87878;--surf:rgba(255,255,255,.025);--bdr:rgba(255,255,255,.06);
+  --text:#dde6f0;--text-d:#8fa3bc;--text-m:#2a4050
+}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 65% 55% at 50% 35%,rgba(100,200,180,.06) 0%,transparent 65%),
+             radial-gradient(ellipse 45% 40% at 15% 85%,rgba(180,140,100,.04) 0%,transparent 55%)}
+.screen{display:none;position:fixed;inset:0;z-index:1;flex-direction:column;align-items:center;justify-content:center}
+.screen.on{display:flex}
+canvas{display:block}
+.btn{padding:10px 24px;border-radius:100px;border:1px solid var(--bdr);background:transparent;
+  color:var(--text-d);font-family:'Outfit',sans-serif;font-size:.79rem;letter-spacing:.04em;cursor:pointer;transition:all .25s;outline:none}
+.btn.teal{border-color:var(--teal-b);color:var(--teal);background:var(--teal-dim)}
+.btn.teal:hover{background:rgba(100,200,180,.15);box-shadow:0 0 22px rgba(100,200,180,.12)}
+.btn.amber{border-color:var(--amber-b);color:var(--amber);background:var(--amber-dim)}
+.btn.amber:hover{background:rgba(200,160,100,.13)}
+.btn.sm{padding:6px 14px;font-size:.71rem}
+/* BOOT */
+#boot{gap:24px}
+.brand{font-family:'Cormorant Garamond',serif;font-size:2.5rem;font-weight:300;letter-spacing:.1em;color:#c8e8de}
+.brand em{font-style:italic;color:var(--teal)}
+.tagline{font-size:.64rem;letter-spacing:.2em;text-transform:uppercase;color:var(--text-m)}
+.boot-btns{display:flex;gap:12px;margin-top:4px}
+/* CASE SELECT */
+#caseselect{gap:26px}
+.cs-title{font-family:'Cormorant Garamond',serif;font-size:1.55rem;font-weight:300;color:var(--text-d);letter-spacing:.06em}
+.cs-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;width:min(680px,92vw)}
+.cs-card{background:var(--surf);border:1px solid var(--bdr);border-radius:14px;padding:17px 19px;cursor:pointer;transition:all .25s;position:relative;overflow:hidden}
+.cs-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:2px 0 0 2px}
+.cs-card.c1::before{background:linear-gradient(180deg,#e87878,#c85050)}
+.cs-card.c2::before{background:linear-gradient(180deg,#c8a060,#a08040)}
+.cs-card.c3::before{background:linear-gradient(180deg,#8fb8d4,#6090b0)}
+.cs-card.c4::before{background:linear-gradient(180deg,#b08fd4,#8060b0)}
+.cs-card:hover{border-color:rgba(255,255,255,.12);background:rgba(255,255,255,.04);transform:translateY(-2px)}
+.cs-tag{font-size:.54rem;text-transform:uppercase;letter-spacing:.12em;color:var(--text-m);margin-bottom:6px}
+.cs-name{font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--text);margin-bottom:4px}
+.cs-desc{font-size:.69rem;color:var(--text-m);line-height:1.5;margin-bottom:9px}
+.cs-meta{display:flex;gap:7px;flex-wrap:wrap}
+.cs-pill{padding:2px 7px;border-radius:100px;font-size:.57rem;font-weight:600}
+.cs-diff{padding:2px 7px;border-radius:100px;font-size:.57rem;border:1px solid}
+.cs-arrow{position:absolute;bottom:14px;right:16px;font-size:.65rem;color:var(--teal);opacity:0;transition:opacity .2s}
+.cs-card:hover .cs-arrow{opacity:1}
+/* TOPBAR */
+.topbar{width:100%;display:flex;align-items:center;justify-content:space-between;
+  padding:11px 22px;border-bottom:1px solid var(--bdr);
+  background:rgba(6,10,16,.95);backdrop-filter:blur(14px);flex-shrink:0;z-index:20}
+.top-logo{font-family:'Cormorant Garamond',serif;font-size:.95rem;font-weight:300;color:var(--teal);letter-spacing:.1em;cursor:pointer}
+.top-tabs{display:flex;background:rgba(255,255,255,.02);border:1px solid var(--bdr);border-radius:100px;overflow:hidden}
+.ttab{padding:5px 14px;font-family:'Outfit',sans-serif;font-size:.69rem;border:none;background:transparent;color:var(--text-m);cursor:pointer;transition:all .2s}
+.ttab.on{background:rgba(100,200,180,.1);color:var(--teal)}
+.top-right{display:flex;align-items:center;gap:8px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.abadge{display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:100px;
+  border:1px solid rgba(232,120,120,.22);background:rgba(232,120,120,.06);
+  font-size:.61rem;color:#e87878;opacity:0;transition:opacity .4s;cursor:pointer}
+.abadge.show{opacity:1}
+.bdot{width:5px;height:5px;border-radius:50%;background:#e87878;animation:blink 1.4s ease-in-out infinite}
+/* TRAINING */
+#training{justify-content:flex-start}
+.train-body{flex:1;display:flex;width:100%;overflow:hidden}
+.orb-panel{width:285px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:12px;border-right:1px solid var(--bdr);padding:18px;background:rgba(6,10,16,.4)}
+.orb-st{font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-m);
+  min-height:14px;text-align:center;transition:color .4s;max-width:220px;line-height:1.5}
+.orb-st.go{color:var(--teal)}.orb-st.li{color:var(--amber)}
+.case-card{width:100%;background:var(--surf);border:1px solid var(--bdr);border-radius:10px;padding:10px 13px}
+.case-lbl{font-size:.53rem;text-transform:uppercase;letter-spacing:.12em;color:var(--text-m);margin-bottom:4px}
+.case-nm{font-family:'Cormorant Garamond',serif;font-size:.96rem;color:var(--text)}
+.case-sub{font-size:.65rem;color:var(--text-m);margin-top:2px}
+/* emotion meter */
+.emo-meter{width:100%;background:var(--surf);border:1px solid var(--bdr);border-radius:10px;padding:10px 13px}
+.emo-lbl{font-size:.53rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-m);margin-bottom:8px}
+.emo-row{display:flex;align-items:center;gap:7px;margin-bottom:5px}
+.emo-name{font-size:.63rem;color:var(--text-d);width:64px;flex-shrink:0}
+.emo-track{flex:1;height:3px;background:rgba(255,255,255,.04);border-radius:2px;overflow:hidden}
+.emo-fill{height:100%;border-radius:2px;transition:width .8s ease}
+.emo-val{font-size:.59rem;color:var(--text-m);width:24px;text-align:right;font-family:monospace}
+/* trainee confidence meter */
+.conf-card{width:100%;background:var(--surf);border:1px solid var(--bdr);border-radius:10px;padding:10px 13px}
+.conf-lbl{font-size:.53rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-m);margin-bottom:6px}
+.conf-val{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;color:var(--teal);text-align:center}
+.conf-sub{font-size:.61rem;color:var(--text-m);text-align:center;margin-top:2px}
+@keyframes recP{0%,100%{box-shadow:0 0 0 0 rgba(232,120,120,.45)}50%{box-shadow:0 0 0 16px rgba(232,120,120,0)}}
+.mic-wrap{display:flex;flex-direction:column;align-items:center;gap:5px}
+.micbtn{width:54px;height:54px;border-radius:50%;border:1.5px solid var(--teal-b);
+  background:var(--teal-dim);color:var(--teal);font-size:20px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .25s;outline:none}
+.micbtn:hover{background:rgba(100,200,180,.14)}
+.micbtn.rec{border-color:rgba(232,120,120,.6)!important;background:rgba(232,120,120,.12)!important;
+  color:var(--red)!important;animation:recP 1.2s ease-in-out infinite}
+.michint{font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-m)}
+/* CHAT */
+.chat-panel{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.messages{flex:1;overflow-y:auto;padding:18px 22px;display:flex;flex-direction:column;gap:10px}
+.messages::-webkit-scrollbar{width:3px}
+.messages::-webkit-scrollbar-thumb{background:rgba(255,255,255,.07);border-radius:2px}
+@keyframes fu{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.msg{display:flex;gap:8px;align-items:flex-start;animation:fu .3s ease;max-width:76%}
+.msg.you{flex-direction:row-reverse;align-self:flex-end}
+.mav{width:27px;height:27px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px}
+.mav.ai{background:rgba(100,200,180,.12)}.mav.you{background:rgba(200,160,100,.12)}
+.mbub{padding:9px 13px;border-radius:12px;font-size:.8rem;line-height:1.65}
+.mbub.ai{background:var(--surf);border:1px solid var(--bdr);border-top-left-radius:2px}
+.mbub.you{background:rgba(100,200,180,.07);border:1px solid rgba(100,200,180,.14);border-top-right-radius:2px}
+.mflag{font-size:.57rem;color:rgba(232,120,120,.7);margin-top:3px;padding:0 2px}
+.mconf{font-size:.57rem;color:rgba(100,200,180,.6);margin-top:2px;padding:0 2px}
+.chat-bar{padding:10px 16px;border-top:1px solid var(--bdr);display:flex;align-items:center;gap:8px;background:rgba(6,10,16,.6)}
+.cinput{flex:1;background:rgba(255,255,255,.03);border:1px solid var(--bdr);border-radius:100px;
+  padding:9px 17px;color:var(--text);font-family:'Outfit',sans-serif;font-size:.81rem;outline:none;transition:border-color .2s}
+.cinput:focus{border-color:var(--teal-b)}
+.cinput::placeholder{color:var(--text-m)}
+.sendbtn{width:38px;height:38px;border-radius:50%;border:1px solid var(--teal-b);background:var(--teal-dim);
+  color:var(--teal);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;outline:none}
+.sendbtn:hover{background:rgba(100,200,180,.18)}
+/* VIDEO */
+@keyframes popIn{from{opacity:0;transform:scale(.88) translateY(10px)}to{opacity:1;transform:none}}
+.vpop{position:fixed;bottom:76px;right:20px;width:280px;border-radius:13px;overflow:hidden;
+  background:#0c1520;border:1px solid var(--bdr);box-shadow:0 18px 55px rgba(0,0,0,.75);
+  z-index:200;display:none;animation:popIn .28s cubic-bezier(.34,1.56,.64,1)}
+.vpop.on{display:block}
+.vph{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-bottom:1px solid var(--bdr)}
+.vptit{font-size:.74rem;font-weight:500}.vpsub{font-size:.58rem;color:var(--text-m);margin-top:1px}
+.vpx{width:21px;height:21px;border-radius:5px;border:1px solid var(--bdr);background:transparent;
+  color:var(--text-m);cursor:pointer;font-size:9px;display:flex;align-items:center;justify-content:center}
+.vpx:hover{border-color:rgba(232,120,120,.4);color:var(--red)}
+.vpsc{height:130px;background:linear-gradient(135deg,#0a1828,#081018);display:flex;align-items:center;
+  justify-content:center;font-size:2.4rem;position:relative}
+.vpov{position:absolute;inset:0;background:rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center}
+.vppl{width:34px;height:34px;border-radius:50%;background:rgba(100,200,180,.72);display:flex;
+  align-items:center;justify-content:center;font-size:11px;color:#060a10;transition:transform .2s;cursor:pointer}
+.vpsc:hover .vppl{transform:scale(1.1)}
+.vptags{display:flex;gap:4px;padding:7px 10px;flex-wrap:wrap}
+.vtag{padding:2px 6px;border-radius:4px;font-size:.56rem;font-weight:600}
+.vpcap{padding:0 10px 10px;font-size:.67rem;color:#2a4070;font-style:italic;line-height:1.5}
+.vidfloat{position:fixed;bottom:22px;right:22px;width:42px;height:42px;border-radius:12px;
+  border:1px solid var(--bdr);background:var(--surf);color:var(--text-m);font-size:15px;cursor:pointer;
+  transition:all .2s;display:flex;align-items:center;justify-content:center;z-index:150}
+.vidfloat:hover{border-color:var(--teal-b);color:var(--teal)}
+/* MENTOR / REPORT */
+#mentor{justify-content:flex-start;overflow-y:auto}
+#mentor::-webkit-scrollbar{width:3px}
+#mentor::-webkit-scrollbar-thumb{background:rgba(255,255,255,.07)}
+.mwrap{width:min(740px,95vw);margin:0 auto;padding:28px 0 38px}
+.rhdr{text-align:center;padding:28px 0 20px;border-bottom:1px solid var(--bdr);margin-bottom:22px}
+.rhdr h1{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;color:var(--teal);letter-spacing:.06em}
+.rhdr p{font-size:.63rem;color:var(--text-m);margin-top:4px;letter-spacing:.12em;text-transform:uppercase}
+.rmeta{display:flex;justify-content:space-between;font-size:.69rem;color:var(--text-m);padding:0 0 16px;flex-wrap:wrap;gap:6px}
+.rmeta strong{color:var(--text-d);font-weight:500}
+.sgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin-bottom:20px}
+.scard{background:var(--surf);border:1px solid var(--bdr);border-radius:11px;padding:13px 9px;text-align:center;position:relative;overflow:hidden}
+.scard::before{content:'';position:absolute;left:0;right:0;bottom:0;height:3px}
+.scard.A::before{background:linear-gradient(90deg,#8fd4b0,#8fd4c0)}
+.scard.B::before{background:linear-gradient(90deg,#8fb8d4,#80a8e0)}
+.scard.C::before{background:linear-gradient(90deg,#d4c08f,#c8a060)}
+.scard.D::before{background:linear-gradient(90deg,#d49080,#e87878)}
+.sc-lbl{font-size:.54rem;text-transform:uppercase;letter-spacing:.09em;color:var(--text-m);margin-bottom:6px;line-height:1.35}
+.sc-v{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;line-height:1}
+.sc-v.A{color:#8fd4b0}.sc-v.B{color:#8fb8d4}.sc-v.C{color:#d4c08f}.sc-v.D{color:#e87878}
+.sc-n{font-size:.6rem;color:var(--text-m);margin-top:3px;line-height:1.35}
+.vemo-section{margin-bottom:20px;background:var(--surf);border:1px solid var(--bdr);border-radius:12px;padding:16px}
+.vemo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.vemo-box{text-align:center;padding:10px;background:rgba(255,255,255,.02);border-radius:8px;border:1px solid var(--bdr)}
+.vemo-icon{font-size:1.3rem;margin-bottom:3px}
+.vemo-label{font-size:.59rem;color:var(--text-m);text-transform:uppercase;letter-spacing:.08em}
+.vemo-val{font-size:.9rem;font-weight:500;margin-top:2px}
+.bsec{margin-bottom:20px}
+.sec-t{font-size:.58rem;text-transform:uppercase;letter-spacing:.14em;color:var(--text-m);margin-bottom:12px}
+.brow{display:flex;align-items:center;gap:12px;margin-bottom:9px}
+.bname{font-size:.71rem;color:var(--text-d);width:195px;flex-shrink:0}
+.btrack{flex:1;height:5px;background:rgba(255,255,255,.04);border-radius:3px;overflow:hidden}
+.bfill{height:100%;border-radius:3px;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
+.bpct{font-size:.64rem;color:var(--text-m);width:32px;text-align:right;font-family:monospace}
+.isec{margin-bottom:20px}
+.ipill{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:100px;margin:3px;font-size:.65rem}
+.ipill.jargon{background:rgba(232,160,80,.1);border:1px solid rgba(232,160,80,.25);color:#d4a070}
+.ipill.empathy{background:rgba(232,100,100,.1);border:1px solid rgba(232,100,100,.25);color:var(--red)}
+.ipill.tone{background:rgba(180,120,220,.1);border:1px solid rgba(180,120,220,.25);color:#b888d4}
+.nsec{margin-bottom:22px}
+.nitem{display:flex;gap:10px;padding:11px;background:var(--surf);border:1px solid var(--bdr);border-radius:8px;margin-bottom:8px}
+.nnum{width:22px;height:22px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:600;background:rgba(100,200,180,.1);color:var(--teal)}
+.nbody h5{font-size:.74rem;font-weight:500;color:var(--text-d);margin-bottom:2px}
+.nbody p{font-size:.69rem;color:var(--text-m);line-height:1.55}
+.mnote{background:rgba(100,200,180,.03);border:1px solid rgba(100,200,180,.1);border-radius:9px;padding:13px;margin-bottom:22px;font-size:.74rem;color:#3a6060;line-height:1.7}
+.mnote strong{color:var(--teal);font-weight:500}
+.mdiv{text-align:center;padding:20px 0;border-top:1px solid var(--bdr);margin-bottom:18px}
+.mdiv h2{font-family:'Cormorant Garamond',serif;font-size:1.35rem;font-weight:300;color:var(--text-d);letter-spacing:.06em}
+.mdiv p{font-size:.66rem;color:var(--text-m);margin-top:3px}
+.morb-row{display:flex;justify-content:center;margin:12px 0 6px}
+.mchat{background:var(--surf);border:1px solid var(--bdr);border-radius:13px;overflow:hidden;margin-bottom:18px}
+.mmsgs{min-height:140px;max-height:300px;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:9px}
+.mmsgs::-webkit-scrollbar{width:2px}
+.minput-row{display:flex;gap:8px;padding:9px 13px;border-top:1px solid var(--bdr);background:rgba(6,10,16,.4)}
+.minput{flex:1;background:rgba(255,255,255,.03);border:1px solid var(--bdr);border-radius:100px;
+  padding:7px 15px;color:var(--text);font-family:'Outfit',sans-serif;font-size:.78rem;outline:none;transition:border-color .2s}
+.minput:focus{border-color:var(--teal-b)}
+.minput::placeholder{color:var(--text-m)}
+.ract{display:flex;gap:9px;justify-content:center;padding-bottom:26px;flex-wrap:wrap}
+/* DEVELOPER */
+#developer{justify-content:flex-start;overflow-y:auto}
+#developer::-webkit-scrollbar{width:3px}
+#developer::-webkit-scrollbar-thumb{background:rgba(200,160,100,.12)}
+.dwrap{width:min(880px,95vw);margin:0 auto;padding:24px 0 32px;display:flex;flex-direction:column;gap:16px}
+.dhdr{display:flex;align-items:center;justify-content:space-between;padding-bottom:14px;border-bottom:1px solid rgba(200,160,100,.1)}
+.dhdr h1{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;color:var(--amber);letter-spacing:.06em}
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.dcard{background:rgba(200,160,100,.02);border:1px solid rgba(200,160,100,.09);border-radius:12px;padding:16px}
+.dct{font-size:.57rem;text-transform:uppercase;letter-spacing:.13em;color:#6a5030;margin-bottom:12px}
+.srow{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.sbox{background:rgba(255,255,255,.015);border:1px solid var(--bdr);border-radius:9px;padding:12px;text-align:center}
+.sv{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:300;color:var(--amber)}
+.sl{font-size:.59rem;color:var(--text-m);margin-top:1px}
+.uzone{border:1.5px dashed rgba(200,160,100,.18);border-radius:8px;padding:16px;text-align:center;cursor:pointer;transition:all .2s;background:rgba(200,160,100,.015);margin-bottom:10px;position:relative}
+.uzone:hover{border-color:rgba(200,160,100,.45);background:rgba(200,160,100,.04)}
+.uzone input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.uzone span{font-size:1.35rem;margin-bottom:4px;display:block}
+.uzone p{font-size:.68rem;color:#6a5030}.uzone small{font-size:.6rem;color:#3a3020;margin-top:2px;display:block}
+.fi{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.015);border:1px solid var(--bdr);border-radius:7px;padding:7px 10px;margin-bottom:5px;animation:fu .3s ease}
+.fi-ic{font-size:13px}.fi-inf h6{font-size:.71rem;font-weight:500;color:var(--text-d)}.fi-inf p{font-size:.6rem;color:var(--text-m)}
+.fibadge{margin-left:auto;padding:2px 7px;border-radius:4px;font-size:.56rem;font-weight:600}
+.fibadge.ok{background:rgba(100,200,160,.1);color:#80d0a0}.fibadge.pnd{background:rgba(200,160,80,.1);color:var(--amber)}
+.rrow{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.rlbl{font-size:.71rem;color:var(--text-d);flex:1}
+.rpct{width:44px;background:rgba(255,255,255,.03);border:1px solid var(--bdr);border-radius:5px;padding:3px 5px;color:var(--amber);font-family:monospace;font-size:.68rem;text-align:center;outline:none}
+.rtog{width:30px;height:16px;border-radius:8px;border:none;cursor:pointer;background:rgba(100,200,160,.22);position:relative;flex-shrink:0}
+.rtog::after{content:'';position:absolute;width:10px;height:10px;border-radius:50%;background:#80d0a0;top:3px;left:3px}
+.arow{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.albl{font-size:.69rem;color:var(--text-m);width:160px;flex-shrink:0}
+.abar{flex:1;height:4px;background:rgba(200,160,100,.08);border-radius:2px;overflow:hidden}
+.afill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--amber),#e0c080)}
+.aval{font-size:.64rem;color:#6a5030;width:28px;text-align:right;font-family:monospace}
+.epill{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:100px;margin:2px;font-size:.63rem;background:rgba(200,160,100,.08);border:1px solid rgba(200,160,100,.18);color:#8a7050}
+.vrc{display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 0}
+.vorb{width:50px;height:50px;border-radius:50%;cursor:pointer;background:radial-gradient(circle at 38% 35%,#f0d8a0,#c8a060 50%,#806030);box-shadow:0 0 14px rgba(200,160,100,.2);display:flex;align-items:center;justify-content:center;font-size:19px;transition:all .2s}
+.vorb:hover{transform:scale(1.06)}.vorb.rec{animation:recP 1s infinite}
+.vlbl{font-size:.68rem;color:#6a5030}
+</style>
+</head>
+<body>
+
+<!-- BOOT -->
+<div class="screen on" id="boot">
+  <div class="brand">Fellow<em>mate</em></div>
+  <p class="tagline">Humanistic Pediatric Neurology · AI Training Platform</p>
+  <canvas id="bootOrb" width="195" height="195" style="cursor:pointer" onclick="goSelectCase()"></canvas>
+  <div class="boot-btns">
+    <button class="btn teal" onclick="goSelectCase()">Training Mode</button>
+    <button class="btn amber" onclick="goDev()">Developer Mode</button>
+  </div>
+</div>
+
+<!-- CASE SELECT -->
+<div class="screen" id="caseselect">
+  <p class="cs-title">Choose a Training Case</p>
+  <div class="cs-grid">
+    <div class="cs-card c1" onclick="startCase('dravet')">
+      <div class="cs-tag">Case 01 · Epilepsy</div>
+      <div class="cs-name">Aiden, 4 yrs — Dravet Syndrome</div>
+      <div class="cs-desc">Mother Meena received diagnosis 3 days ago. Deep grief, shock and fear. Husband David is present but withdrawn into silence.</div>
+      <div class="cs-meta">
+        <span class="cs-pill" style="background:rgba(232,120,120,.12);color:#e87878">Grief</span>
+        <span class="cs-pill" style="background:rgba(232,180,80,.1);color:#c8a060">Shock</span>
+        <span class="cs-diff" style="color:#e87878;border-color:rgba(232,80,80,.3)">Advanced</span>
+      </div>
+      <div class="cs-arrow">Start →</div>
+    </div>
+    <div class="cs-card c2" onclick="startCase('epilepsy')">
+      <div class="cs-tag">Case 02 · Epilepsy</div>
+      <div class="cs-name">Maya, 7 yrs — Childhood Absence Epilepsy</div>
+      <div class="cs-desc">Father Rajiv is in denial. Mother Priya is anxious about school performance, social stigma, and Maya's future relationships.</div>
+      <div class="cs-meta">
+        <span class="cs-pill" style="background:rgba(200,160,80,.1);color:#c8a060">Denial</span>
+        <span class="cs-pill" style="background:rgba(232,120,120,.1);color:#e87878">Anxiety</span>
+        <span class="cs-diff" style="color:#c8a060;border-color:rgba(200,160,80,.3)">Intermediate</span>
+      </div>
+      <div class="cs-arrow">Start →</div>
+    </div>
+    <div class="cs-card c3" onclick="startCase('duchenne')">
+      <div class="cs-tag">Case 03 · Neuromuscular</div>
+      <div class="cs-name">Rajan, 11 yrs — Duchenne MD</div>
+      <div class="cs-desc">Mother Sunita was told today. She is in raw shock and asking the hardest questions about prognosis, lifespan, and her son's future.</div>
+      <div class="cs-meta">
+        <span class="cs-pill" style="background:rgba(100,160,220,.1);color:#80b0e0">Shock</span>
+        <span class="cs-pill" style="background:rgba(180,120,220,.1);color:#b888d4">Anger</span>
+        <span class="cs-diff" style="color:#e87878;border-color:rgba(232,80,80,.3)">Advanced</span>
+      </div>
+      <div class="cs-arrow">Start →</div>
+    </div>
+    <div class="cs-card c4" onclick="startCase('cerebral')">
+      <div class="cs-tag">Case 04 · Developmental</div>
+      <div class="cs-name">Priya, 9 yrs — Cerebral Palsy</div>
+      <div class="cs-desc">Single mother Kavitha is exhausted and frustrated after 3 years of misdiagnosis. She is guarded, skeptical, and emotionally depleted.</div>
+      <div class="cs-meta">
+        <span class="cs-pill" style="background:rgba(232,160,80,.1);color:#d4a070">Frustrated</span>
+        <span class="cs-pill" style="background:rgba(180,120,220,.1);color:#b888d4">Guarded</span>
+        <span class="cs-diff" style="color:#c8a060;border-color:rgba(200,160,80,.3)">Intermediate</span>
+      </div>
+      <div class="cs-arrow">Start →</div>
+    </div>
+  </div>
+  <button class="btn" style="margin-top:4px" onclick="goScreen('boot')">← Back</button>
+</div>
+
+<!-- TRAINING -->
+<div class="screen" id="training">
+  <div class="topbar">
+    <span class="top-logo" onclick="goScreen('boot')">Fellowmate</span>
+    <div class="top-tabs">
+      <button class="ttab on" id="tab-rp" onclick="setMode('roleplay')">Family Roleplay</button>
+      <button class="ttab" id="tab-mn" onclick="setMode('debrief')">Mentor Debrief</button>
+    </div>
+    <div class="top-right">
+      <div class="abadge" id="abadge" onclick="showIssues()">
+        <div class="bdot"></div><span id="badgetxt">Issues detected</span>
+      </div>
+      <button class="btn sm teal" onclick="endSession()">End Session →</button>
+    </div>
+  </div>
+  <div class="train-body">
+    <div class="orb-panel">
+      <p class="orb-st" id="orbst">Tap mic to begin</p>
+      <canvas id="trainOrb" width="210" height="210"></canvas>
+      <div class="case-card">
+        <div class="case-lbl">Active Case</div>
+        <div class="case-nm" id="caseNm">Aiden, 4 yrs</div>
+        <div class="case-sub" id="caseSub">Dravet Syndrome · Day 3</div>
+      </div>
+      <div class="emo-meter">
+        <div class="emo-lbl">Family Emotional State</div>
+        <div class="emo-row"><span class="emo-name">Grief</span><div class="emo-track"><div class="emo-fill" id="emoGrief" style="width:80%;background:#e87878"></div></div><span class="emo-val" id="emoGriefV">80</span></div>
+        <div class="emo-row"><span class="emo-name">Fear</span><div class="emo-track"><div class="emo-fill" id="emoFear" style="width:70%;background:#d4a070"></div></div><span class="emo-val" id="emoFearV">70</span></div>
+        <div class="emo-row"><span class="emo-name">Hope</span><div class="emo-track"><div class="emo-fill" id="emoHope" style="width:20%;background:#8fd4b0"></div></div><span class="emo-val" id="emoHopeV">20</span></div>
+        <div class="emo-row"><span class="emo-name">Trust</span><div class="emo-track"><div class="emo-fill" id="emoTrust" style="width:30%;background:#8fb8d4"></div></div><span class="emo-val" id="emoTrustV">30</span></div>
+      </div>
+      <div class="conf-card">
+        <div class="conf-lbl">Your Communication</div>
+        <div class="conf-val" id="confVal">—</div>
+        <div class="conf-sub" id="confSub">Awaiting input</div>
+      </div>
+      <div class="mic-wrap">
+        <button class="micbtn" id="micBtn" onclick="tapMic()">🎙️</button>
+        <span class="michint" id="michint">tap to speak</span>
+      </div>
+    </div>
+    <div class="chat-panel">
+      <div class="messages" id="messages"></div>
+      <div class="chat-bar">
+        <input class="cinput" id="cinput" type="text" placeholder="Type your response to the family…" onkeydown="if(event.key==='Enter')tapSend()">
+        <button class="sendbtn" onclick="tapSend()">↑</button>
+      </div>
+    </div>
+  </div>
+  <button class="vidfloat" onclick="toggleVid()">🎬</button>
+</div>
+
+<!-- VIDEO POPUP -->
+<div class="vpop" id="vpop">
+  <div class="vph">
+    <div><div class="vptit" id="vpTitle">The Day We Were Told</div><div class="vpsub" id="vpSub">Aiden's family · Dravet Syndrome</div></div>
+    <button class="vpx" onclick="toggleVid()">✕</button>
+  </div>
+  <div class="vpsc"><span id="vpEmoji">👨‍👩‍👦</span><div class="vpov"><div class="vppl">▶</div></div></div>
+  <div class="vptags" id="vpTags"></div>
+  <div class="vpcap" id="vpCap">"Nobody told us what to feel. They gave us the paper and left."</div>
+</div>
+
+<!-- MENTOR / REPORT -->
+<div class="screen" id="mentor">
+  <div class="mwrap">
+    <div class="rhdr"><h1>Session Report</h1><p id="rdate">Generating analysis…</p></div>
+    <div class="rmeta">
+      <span>Case: <strong id="rCase">Aiden — Dravet Syndrome</strong></span>
+      <span>Duration: <strong id="rDur">—</strong></span>
+      <span>Exchanges: <strong id="rExch">—</strong></span>
+    </div>
+    <div class="sgrid" id="sgrid"></div>
+    <!-- Voice / trainee analysis -->
+    <div class="vemo-section">
+      <div class="sec-t">Trainee Communication Profile</div>
+      <div class="vemo-grid" id="vemoGrid"></div>
+    </div>
+    <div class="bsec"><div class="sec-t">Behavioral Dimensions</div><div id="brows"></div></div>
+    <div class="isec"><div class="sec-t">Issues Detected During Session</div><div id="ipills"></div></div>
+    <div class="nsec"><div class="sec-t">What To Work On Next</div><div id="nsteps"></div></div>
+    <div class="mnote" id="mnote"></div>
+    <div class="mdiv"><h2>Mentor Conversation</h2><p>Your senior mentor is ready to guide you through this session</p></div>
+    <div class="morb-row"><canvas id="mentorOrb" width="125" height="125"></canvas></div>
+    <div class="mchat">
+      <div class="mmsgs" id="mmsgs"></div>
+      <div class="minput-row">
+        <input class="minput" id="minput" type="text" placeholder="Ask your mentor anything about this session…" onkeydown="if(event.key==='Enter')sendMentor()">
+        <button class="btn sm teal" onclick="sendMentor()">Send</button>
+      </div>
+    </div>
+    <div class="ract">
+      <button class="btn teal" onclick="goSelectCase()">New Session</button>
+      <button class="btn amber" onclick="exportPDF()">Export PDF</button>
+      <button class="btn" onclick="goScreen('boot')">Home</button>
+    </div>
+  </div>
+</div>
+
+<!-- DEVELOPER -->
+<div class="screen" id="developer">
+  <div class="topbar">
+    <span class="top-logo" style="color:var(--amber)">Fellowmate <span style="font-size:.7rem;color:var(--text-m);font-family:'Outfit',sans-serif;font-weight:300">/ Developer</span></span>
+    <div></div>
+    <button class="btn sm amber" onclick="goScreen('boot')">← Exit Console</button>
+  </div>
+  <div style="flex:1;overflow-y:auto;width:100%">
+    <div class="dwrap">
+      <div class="dhdr"><h1>Developer Console</h1></div>
+      <div class="srow">
+        <div class="sbox"><div class="sv">47</div><div class="sl">Total Sessions</div></div>
+        <div class="sbox"><div class="sv">73%</div><div class="sl">Avg Empathy</div></div>
+        <div class="sbox"><div class="sv">12</div><div class="sl">Trainees</div></div>
+      </div>
+      <div class="dgrid">
+        <div class="dcard">
+          <div class="dct">Upload Cases &amp; Videos</div>
+          <div class="uzone"><input type="file" multiple accept=".pdf,.mp4,.mov,.docx" onchange="handleUpload(event,'clist')"><span>📁</span><p>Drop case files, PDFs, patient videos</p><small>PDF, MP4, MOV, DOCX</small></div>
+          <div id="clist">
+            <div class="fi"><span class="fi-ic">📋</span><div class="fi-inf"><h6>Dravet_Aiden_Case.pdf</h6><p>2.4 MB · 3 emotion tags</p></div><span class="fibadge ok">Trained</span></div>
+            <div class="fi"><span class="fi-ic">🎬</span><div class="fi-inf"><h6>Meena_interview_grief.mp4</h6><p>48 MB · Tagged: grief, anxiety</p></div><span class="fibadge ok">Trained</span></div>
+          </div>
+        </div>
+        <div class="dcard">
+          <div class="dct">Behavioral Rubric Weights</div>
+          <div class="rrow"><span class="rlbl">Emotional Acknowledgment</span><input class="rpct" value="25%"><button class="rtog"></button></div>
+          <div class="rrow"><span class="rlbl">Non-judgmental Language</span><input class="rpct" value="20%"><button class="rtog"></button></div>
+          <div class="rrow"><span class="rlbl">Tone &amp; Warmth</span><input class="rpct" value="18%"><button class="rtog"></button></div>
+          <div class="rrow"><span class="rlbl">Silence Comfort</span><input class="rpct" value="12%"><button class="rtog"></button></div>
+          <div class="rrow"><span class="rlbl">Family Inclusion</span><input class="rpct" value="15%"><button class="rtog"></button></div>
+          <div class="rrow"><span class="rlbl">Clinical Clarity</span><input class="rpct" value="10%"><button class="rtog"></button></div>
+          <button class="btn sm teal" style="margin-top:8px" onclick="alert('Rubric saved!')">Save Rubric</button>
+        </div>
+        <div class="dcard">
+          <div class="dct">Research Papers &amp; Modules</div>
+          <div class="uzone"><input type="file" multiple accept=".pdf" onchange="handleUpload(event,'plist')"><span>📄</span><p>Upload research papers &amp; training modules</p><small>PDF only</small></div>
+          <div id="plist">
+            <div class="fi"><span class="fi-ic">📄</span><div class="fi-inf"><h6>Humanistic_Comm_Guidelines.pdf</h6><p>1.1 MB · Indexed</p></div><span class="fibadge ok">Active</span></div>
+          </div>
+        </div>
+        <div class="dcard">
+          <div class="dct">Communication Error Analytics</div>
+          <div class="arow"><span class="albl">Medical Jargon Overuse</span><div class="abar"><div class="afill" style="width:72%"></div></div><span class="aval">72%</span></div>
+          <div class="arow"><span class="albl">Low Empathy Responses</span><div class="abar"><div class="afill" style="width:58%"></div></div><span class="aval">58%</span></div>
+          <div class="arow"><span class="albl">Dismissive Tone</span><div class="abar"><div class="afill" style="width:41%"></div></div><span class="aval">41%</span></div>
+          <div class="arow"><span class="albl">Poor Emotional Response</span><div class="abar"><div class="afill" style="width:63%"></div></div><span class="aval">63%</span></div>
+          <div class="arow"><span class="albl">Interrupted Family</span><div class="abar"><div class="afill" style="width:29%"></div></div><span class="aval">29%</span></div>
+          <div style="margin-top:10px"><div class="dct" style="margin-bottom:6px">Most Common Issues</div>
+            <span class="epill">⚠ Jargon overuse</span><span class="epill">⚠ Rushed explanation</span><span class="epill">⚠ No emotional ack.</span></div>
+        </div>
+        <div class="dcard">
+          <div class="dct">Add Clinical Scenarios</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <input style="background:rgba(255,255,255,.03);border:1px solid var(--bdr);border-radius:7px;padding:8px 11px;color:var(--text);font-family:'Outfit',sans-serif;font-size:.75rem;outline:none" placeholder="Scenario title (e.g. Childhood Epilepsy — Maya, 7)">
+            <textarea style="background:rgba(255,255,255,.03);border:1px solid var(--bdr);border-radius:7px;padding:8px 11px;color:var(--text);font-family:'Outfit',sans-serif;font-size:.75rem;outline:none;resize:vertical;min-height:68px" placeholder="Family situation, emotional context, key teaching points…"></textarea>
+            <div style="display:flex;gap:7px">
+              <select style="flex:1;background:rgba(255,255,255,.03);border:1px solid var(--bdr);border-radius:7px;padding:7px;color:var(--text-m);font-family:'Outfit',sans-serif;font-size:.73rem;outline:none">
+                <option>Epilepsy</option><option>Autism Spectrum</option><option>Cerebral Palsy</option><option>Duchenne MD</option><option>Developmental Delay</option>
+              </select>
+              <select style="flex:1;background:rgba(255,255,255,.03);border:1px solid var(--bdr);border-radius:7px;padding:7px;color:var(--text-m);font-family:'Outfit',sans-serif;font-size:.73rem;outline:none">
+                <option>Advanced</option><option>Intermediate</option><option>Beginner</option>
+              </select>
+            </div>
+            <button class="btn sm amber" onclick="alert('Scenario added!')">Add Scenario</button>
+          </div>
+        </div>
+        <div class="dcard">
+          <div class="dct">Record Voice Scenarios</div>
+          <div class="vrc"><div class="vorb" id="vrecOrb" onclick="toggleDevRec()">🎙️</div><span class="vlbl" id="vrecLbl">Tap to record</span></div>
+          <div id="vlist">
+            <div class="fi"><span class="fi-ic">🎙️</span><div class="fi-inf"><h6>Dr. Sharma — Breaking bad news</h6><p>2:34 · Empathetic pacing model</p></div><span class="fibadge ok">Indexed</span></div>
+          </div>
+          <div class="uzone" style="margin-top:10px"><input type="file" accept="audio/*,video/*" onchange="handleUpload(event,'vlist')"><span>🎵</span><p>Upload voice recordings</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* ═══ ORB ENGINE ═══ */
+function makeOrb(id, R) {
+  var cv = document.getElementById(id);
+  if (!cv) return null;
+  var ctx = cv.getContext('2d'), W = cv.width, H = cv.height, cx = W/2, cy = H/2;
+  var N = 560, phi = Math.PI*(3-Math.sqrt(5));
+  var t = 0, sa = 0, la = 0, state = 'idle';
+  var pts = [];
+  for (var i = 0; i < N; i++) {
+    var y = 1-(i/(N-1))*2, r = Math.sqrt(Math.max(0,1-y*y)), th = phi*i;
+    pts.push({x:Math.cos(th)*r, y:y, z:Math.sin(th)*r, ph:Math.random()*Math.PI*2, sz:Math.random()*.65+.4});
+  }
+  function setState(s){ state=s; }
+  function tick(){
+    ctx.clearRect(0,0,W,H); t+=.009;
+    sa = state==='speaking'  ? Math.min(1,sa+.07) : Math.max(0,sa-.05);
+    la = state==='listening' ? Math.min(1,la+.07) : Math.max(0,la-.05);
+    var br=1+Math.sin(t*.6)*.022, rot=t*.11, cr=Math.cos(rot), sr=Math.sin(rot);
+    var list=[];
+    for (var i=0;i<pts.length;i++){
+      var p=pts[i], x2=p.x*cr-p.z*sr, z2=p.x*sr+p.z*cr;
+      var d=sa*.16*Math.sin(p.ph+t*9)*(1-Math.abs(p.y)), l=la*.07*Math.sin(p.ph*2+t*4);
+      var rad=R*br*(1+d+l);
+      list.push({px:cx+x2*rad, py:cy+p.y*rad, depth:(z2+1)/2, p:p});
+    }
+    list.sort(function(a,b){return a.depth-b.depth;});
+    for (var j=0;j<list.length;j++){
+      var item=list[j], sz=item.p.sz*(.35+item.depth*.9);
+      if(state==='speaking') sz*=1+sa*.55*Math.abs(Math.sin(item.p.ph+t*7));
+      var alpha=.18+item.depth*.72;
+      if(la>0){
+        var rv=Math.round(100+(210-100)*la), gv=Math.round(200+(155-200)*la), bv=Math.round(180+(70-180)*la);
+        ctx.fillStyle='rgba('+rv+','+gv+','+bv+','+alpha+')';
+      } else ctx.fillStyle='rgba(100,200,180,'+alpha+')';
+      ctx.beginPath(); ctx.arc(item.px,item.py,Math.max(.3,sz),0,Math.PI*2); ctx.fill();
+    }
+    var gc = la>.1 ? 'rgba(200,155,70,'+(0.08+sa*.08)+')' : 'rgba(100,200,180,'+(0.07+sa*.1)+')';
+    var g = ctx.createRadialGradient(cx,cy,R*.2,cx,cy,R*1.5);
+    g.addColorStop(0,gc); g.addColorStop(1,'transparent');
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,R*1.5,0,Math.PI*2); ctx.fill();
+    requestAnimationFrame(tick);
+  }
+  tick();
+  return {setState:setState};
+}
+
+var O = {};
+window.addEventListener('load', function(){
+  O.boot   = makeOrb('bootOrb', 70);
+  O.train  = makeOrb('trainOrb', 80);
+  O.mentor = makeOrb('mentorOrb', 44);
+  if(window.speechSynthesis){ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged=function(){speechSynthesis.getVoices();}; }
+});
+
+/* ═══ CASE DEFINITIONS ═══ */
+var CASES = {
+  dravet: {
+    name: 'Aiden, 4 yrs', sub: 'Dravet Syndrome · Day 3 post-diagnosis',
+    vidTitle: 'The Day We Were Told', vidSub: "Aiden's family · Dravet Syndrome",
+    vidEmoji: '👨‍👩‍👦', vidCap: '"Nobody told us what to feel. They gave us the paper and left."',
+    vidTags: [{l:'Grief',c:'rgba(232,120,120,.14)',t:'#e87878'},{l:'Shock',c:'rgba(232,180,80,.11)',t:'#c8a060'},{l:'Love',c:'rgba(100,200,160,.11)',t:'#80d4a0'}],
+    opener: "Hello… I'm Meena. Aiden's mum. They told us three days ago — Dravet Syndrome. I still don't understand what that means for his life. He had another seizure last night and I just… I haven't slept. David is here but he can't even speak. Can you please help us understand — what is going to happen to our little boy?",
+    emotions: {grief:85, fear:75, hope:15, trust:25},
+    sys: "You are playing Meena, a 32-year-old mother of Aiden (4 years old, Dravet Syndrome, Day 3 post-diagnosis). Husband David is present but silent, staring at the floor. You are in deep grief, shock, and terror. Your thoughts come in fragments. You cry mid-sentence. You reach for hope then pull back in fear. You refer to Aiden by name often — 'my Aiden', 'little Aiden'. If the trainee uses jargon, you say 'I don't understand what that means'. If they are cold or clinical, you withdraw and go quiet. If they are warm and gentle, you open up slightly and ask more questions. React to HOW they speak, not just what they say. 2-3 sentences only. Never break character. Show the emotion physically in your words — trembling, tears, desperate pauses."
+  },
+  epilepsy: {
+    name: 'Maya, 7 yrs', sub: 'Absence Epilepsy · Recent diagnosis',
+    vidTitle: "Maya's Classroom Moments", vidSub: "Maya's family · Absence Epilepsy",
+    vidEmoji: '👨‍👩‍👧', vidCap: '"Her teacher thought she was daydreaming. We had no idea."',
+    vidTags: [{l:'Confusion',c:'rgba(200,160,80,.12)',t:'#c8a060'},{l:'Denial',c:'rgba(180,120,220,.1)',t:'#b888d4'},{l:'Worry',c:'rgba(232,120,120,.1)',t:'#e87878'}],
+    opener: "Doctor, I have to be honest — Rajiv, my husband, he doesn't really believe there's anything seriously wrong. He says Maya is just a 'dreamy child'. But I see it — these blank spells, 10, 15 times a day. I'm worried about her school, her friendships… will she grow out of this? Will she be able to live a normal life?",
+    emotions: {grief:40, fear:65, hope:50, trust:45},
+    sys: "You are playing Priya, a 38-year-old mother of Maya (7 years old, recently diagnosed with Childhood Absence Epilepsy). Your husband Rajiv is in denial and dismissive. You are anxious, worried about stigma, school performance, and whether Maya will lead a normal life. You love Maya fiercely and are frustrated that no one seems to take this seriously. If the trainee is reassuring without explanation, you push back: 'But how do you know?'. If they explain clearly and warmly, you relax and thank them. 2-3 sentences only. Never break character."
+  },
+  duchenne: {
+    name: 'Rajan, 11 yrs', sub: 'Duchenne MD · Diagnosis day',
+    vidTitle: 'The Day Everything Changed', vidSub: "Rajan's family · Duchenne MD",
+    vidEmoji: '👩‍👦', vidCap: '"He was just playing cricket last week. How can this be happening?"',
+    vidTags: [{l:'Shock',c:'rgba(100,160,220,.12)',t:'#80b0e0'},{l:'Anger',c:'rgba(232,120,120,.12)',t:'#e87878'},{l:'Disbelief',c:'rgba(180,120,220,.1)',t:'#b888d4'}],
+    opener: "I want you to look me in the eye and tell me — is my son going to die from this? Don't give me pamphlets. Don't give me a website. I am his MOTHER. He was playing cricket last week. You are telling me his muscles will just… stop? How long does he have? I need the truth.",
+    emotions: {grief:60, fear:90, hope:10, trust:15},
+    sys: "You are playing Sunita, a 42-year-old mother of Rajan (11 years old, diagnosed with Duchenne MD today). You are in raw shock and rage. You ask the hardest questions directly — about prognosis, lifespan, wheelchairs, cardiac involvement. You will not accept vague answers. If the trainee avoids the truth, you become angry: 'Stop dodging — tell me the truth'. If they are honest, gentle, and present with you emotionally, you break down and cry. You need someone to sit with you in the horror of this, not fix it. 2-3 sentences. Never break character."
+  },
+  cerebral: {
+    name: 'Priya, 9 yrs', sub: 'Cerebral Palsy · After 3 years of misdiagnosis',
+    vidTitle: 'Three Years of Fighting', vidSub: "Kavitha's story · Cerebral Palsy",
+    vidEmoji: '👩‍👧', vidCap: '"Every doctor told us something different. I stopped trusting doctors years ago."',
+    vidTags: [{l:'Exhausted',c:'rgba(200,160,80,.1)',t:'#c8a060'},{l:'Guarded',c:'rgba(180,120,220,.1)',t:'#b888d4'},{l:'Skeptical',c:'rgba(100,160,220,.1)',t:'#80b0e0'}],
+    opener: "Right. So you're the fourth doctor we've seen this year. The first said it was developmental delay. The second said autism. The third said nothing — just referred us on. Now you're saying cerebral palsy. Why should I believe you? What makes you different from all the others who wasted our time?",
+    emotions: {grief:50, fear:55, hope:20, trust:10},
+    sys: "You are playing Kavitha, a 40-year-old single mother of Priya (9 years old, cerebral palsy after 3 years of misdiagnosis). You are emotionally depleted, deeply skeptical of doctors, and guarded. You test the trainee — asking 'why should I trust you?' and 'what took so long?'. You are not hostile, but you are exhausted and have been let down too many times. If the trainee acknowledges the system's failure and validates your suffering, you soften. If they are defensive, you shut down. 2-3 sentences. Never break character."
+  }
+};
+
+var currentCase = 'dravet';
+var sessionStart = null;
+
+/* ═══ NAVIGATION ═══ */
+function goScreen(id){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('on');});
+  document.getElementById(id).classList.add('on');
+}
+function goSelectCase(){ goScreen('caseselect'); }
+function goDev(){ goScreen('developer'); }
+
+function startCase(caseId){
+  currentCase = caseId;
+  resetSession();
+  var c = CASES[caseId];
+  document.getElementById('caseNm').textContent = c.name;
+  document.getElementById('caseSub').textContent = c.sub;
+  // video popup
+  document.getElementById('vpTitle').textContent = c.vidTitle;
+  document.getElementById('vpSub').textContent = c.vidSub;
+  document.getElementById('vpEmoji').textContent = c.vidEmoji;
+  document.getElementById('vpCap').textContent = c.vidCap;
+  document.getElementById('vpTags').innerHTML = c.vidTags.map(function(t){
+    return '<span class="vtag" style="background:'+t.c+';color:'+t.t+'">'+t.l+'</span>';
+  }).join('');
+  // set emotions
+  setEmotions(c.emotions);
+  sessionStart = Date.now();
+  goScreen('training');
+  setTimeout(function(){
+    sendAI(c.opener);
+  }, 500);
+}
+
+function setEmotions(emo){
+  var fields = ['Grief','Fear','Hope','Trust'];
+  fields.forEach(function(f){
+    var el = document.getElementById('emo'+f);
+    var vEl = document.getElementById('emo'+f+'V');
+    var val = emo[f.toLowerCase()] || 0;
+    if(el){ el.style.width = val+'%'; }
+    if(vEl){ vEl.textContent = val; }
+  });
+}
+
+function updateEmotions(traineeText){
+  var c = CASES[currentCase];
+  var emo = {grief: c.emotions.grief, fear: c.emotions.fear, hope: c.emotions.hope, trust: c.emotions.trust};
+  var low = traineeText.toLowerCase();
+  // warm words increase hope and trust
+  var warmWords = ['understand','sorry','hear you','with you','together','support','care','love','okay','safe','here for'];
+  var coldWords = ['calm down','just','simply','technically','unfortunately','statistics','probability'];
+  var warmCount = warmWords.filter(function(w){return low.indexOf(w)!==-1;}).length;
+  var coldCount = coldWords.filter(function(w){return low.indexOf(w)!==-1;}).length;
+  emo.hope = Math.min(95, Math.max(5, emo.hope + warmCount*8 - coldCount*5));
+  emo.trust = Math.min(95, Math.max(5, emo.trust + warmCount*6 - coldCount*8));
+  emo.fear = Math.max(5, emo.fear - warmCount*4);
+  emo.grief = Math.max(10, emo.grief - warmCount*2);
+  // update the case emotions so they persist
+  CASES[currentCase].emotions = emo;
+  setEmotions(emo);
+}
+
+/* ═══ MODE ═══ */
+var mode = 'roleplay';
+function setMode(m){
+  mode=m;
+  document.getElementById('tab-rp').classList.toggle('on',m==='roleplay');
+  document.getElementById('tab-mn').classList.toggle('on',m==='debrief');
+  setOrbSt(m==='roleplay'?'Family Roleplay Active':'Mentor Debrief Active','go');
+}
+
+/* ═══ MESSAGES ═══ */
+var chatHistory=[], issueLog=[], confidenceLog=[];
+
+function addMsg(who, text, flag, conf){
+  var c=document.getElementById('messages');
+  var d=document.createElement('div');
+  d.className='msg'+(who==='you'?' you':'');
+  var fl=flag?'<div class="mflag">⚠ '+flag+'</div>':'';
+  var cv=conf?'<div class="mconf">🧠 '+conf+'</div>':'';
+  d.innerHTML='<div class="mav '+(who==='you'?'you':'ai')+'">'+(who==='you'?'👤':'🧠')+'</div>'+
+    '<div><div class="mbub '+(who==='you'?'you':'ai')+'">'+text+'</div>'+fl+cv+'</div>';
+  c.appendChild(d); c.scrollTop=c.scrollHeight;
+}
+
+function addMentorMsg(who, text){
+  var c=document.getElementById('mmsgs');
+  var d=document.createElement('div');
+  d.className='msg'+(who==='you'?' you':'');
+  d.innerHTML='<div class="mav '+(who==='you'?'you':'ai')+'">'+(who==='you'?'👤':'🎓')+'</div>'+
+    '<div class="mbub '+(who==='you'?'you':'ai')+'">'+text+'</div>';
+  c.appendChild(d); c.scrollTop=c.scrollHeight;
+}
+
+function setOrbSt(txt,cls){
+  var el=document.getElementById('orbst');
+  if(!el)return;
+  el.textContent=txt; el.className='orb-st'+(cls?' '+cls:'');
+}
+
+/* ═══ TRAINEE VOICE/CONFIDENCE ANALYSIS ═══ */
+/* Text-based proxy for voice emotion detection.
+   Analyses: response length, word choice, empathy markers,
+   question asking, pacing indicators */
+function analyzeTraineeVoice(text){
+  var words = text.trim().split(/\s+/);
+  var wcount = words.length;
+  var low = text.toLowerCase();
+
+  // empathy markers
+  var empathyMarkers = ['i understand','i hear','i can imagine','that must be','how are you','how is','tell me more','i am so sorry','i am here','we will','you are not alone','together'];
+  var empathyScore = empathyMarkers.filter(function(m){return low.indexOf(m)!==-1;}).length;
+
+  // question asking (good — shows curiosity and family-centeredness)
+  var questions = (text.match(/\?/g)||[]).length;
+
+  // pacing — very short = rushed, medium = good, too long = overwhelming
+  var paceScore = wcount < 8 ? 'rushed' : wcount > 80 ? 'overwhelming' : 'good';
+
+  // overall confidence label
+  var totalScore = empathyScore*20 + questions*10 + (paceScore==='good'?20:0);
+  totalScore = Math.min(100, totalScore);
+
+  var label, color;
+  if(totalScore >= 60){ label='Empathetic'; color='#8fd4b0'; }
+  else if(totalScore >= 35){ label='Developing'; color='#d4c08f'; }
+  else { label='Needs Work'; color='#e87878'; }
+
+  // update live confidence card
+  var confVal = document.getElementById('confVal');
+  var confSub = document.getElementById('confSub');
+  if(confVal){ confVal.textContent = label; confVal.style.color = color; }
+  if(confSub){
+    var parts = [];
+    if(empathyScore>0) parts.push(empathyScore+' empathy marker'+(empathyScore>1?'s':''));
+    if(questions>0) parts.push(questions+' question'+(questions>1?'s':''));
+    if(paceScore!=='good') parts.push(paceScore+' pacing');
+    confSub.textContent = parts.length ? parts.join(' · ') : 'Keep going';
+  }
+
+  confidenceLog.push({score:totalScore, label:label, empathy:empathyScore, questions:questions, pace:paceScore, wcount:wcount});
+  return {score:totalScore, label:label, note: paceScore!=='good' ? 'Pacing: '+paceScore : null};
+}
+
+/* ═══ LIVE ANALYSIS ENGINE ═══ */
+var JARGON=['sodium channel','scn1a','prognosis','phenotype','pathophysiology','etiology','pharmacoresistant','ketogenic','benzodiazepine','valproate','levetiracetam','comorbidity','neurocognitive','ictal','interictal','gene mutation','mosaic','haploinsufficiency'];
+var COLD=['calm down','you need to understand','as i said','technically','simply put','obviously','it is what it is','nothing we can do','statistics show','the data suggests'];
+var DISMISS=["don't worry","you'll be fine","try not to stress","don't overthink","many parents feel","it could be worse"];
+
+function analyzeMsg(text){
+  var low=text.toLowerCase(), flags=[];
+  JARGON.forEach(function(w){if(low.indexOf(w)!==-1)flags.push({type:'jargon',text:'Medical jargon: "'+w+'"'});});
+  COLD.forEach(function(p){if(low.indexOf(p)!==-1)flags.push({type:'empathy',text:'Low empathy phrase detected'});});
+  DISMISS.forEach(function(p){if(low.indexOf(p)!==-1)flags.push({type:'tone',text:'Dismissive tone: "'+p+'"'});});
+  if(text.trim().split(' ').length<5) flags.push({type:'empathy',text:'Response too brief for emotional context'});
+  return flags;
+}
+
+function updateBadge(){
+  var b=document.getElementById('abadge'), t=document.getElementById('badgetxt');
+  if(issueLog.length>0){b.classList.add('show'); t.textContent=issueLog.length+' issue'+(issueLog.length>1?'s':'')+' detected';}
+}
+
+function showIssues(){
+  if(!issueLog.length)return;
+  alert('Live Analysis:\n\n'+issueLog.map(function(i){return '• '+i.text;}).join('\n')+'\n\nFull report available at End Session.');
+}
+
+/* ═══ GROQ API ═══ */
+var GROQ_KEY = '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';
+var GROQ_MODEL = 'llama-3.3-70b-versatile';
+
+var SYS_DB='You are a compassionate senior pediatric neurologist and communication mentor on Fellowmate. You just watched a trainee interact with a simulated grieving family. Debrief them warmly but specifically. Praise what worked emotionally. Name exactly what was missed. Ask one reflective question. Reference behavioral psychology. 3-4 sentences.';
+var SYS_MC='You are a wise, warm senior pediatric neurologist acting as AI mentor on Fellowmate. The trainee just completed a session. Guide them with empathy, clinical wisdom, and behavioral psychology. Be specific, actionable, encouraging. Refer to their session performance when relevant.';
+
+async function callClaude(messages, sys, maxTok){
+  try{
+    var msgs=[];
+    if(sys) msgs.push({role:'system',content:sys});
+    messages.forEach(function(m){msgs.push({role:m.role,content:m.content});});
+    var res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      body:JSON.stringify({model:GROQ_MODEL, max_tokens:maxTok||220, messages:msgs})
+    });
+    var data=await res.json();
+    if(data.error){console.error('Groq:',data.error.message);return null;}
+    return (data.choices&&data.choices[0]&&data.choices[0].message.content)||null;
+  }catch(e){console.error('Groq fetch:',e);return null;}
+}
+
+/* ═══ TTS ═══ */
+var vcache=[];
+function refreshV(){vcache=window.speechSynthesis?speechSynthesis.getVoices():[];}
+refreshV();
+if(window.speechSynthesis) speechSynthesis.onvoiceschanged=refreshV;
+
+function getVoice(female){
+  var en=vcache.filter(function(v){return v.lang.startsWith('en');}), pool=en.length?en:vcache;
+  if(!pool.length) return null;
+  if(female) return pool.find(function(v){return /samantha|karen|victoria|moira|zira|fiona|google uk english female/i.test(v.name);})||pool[0];
+  return pool.find(function(v){return /daniel|alex|reed|thomas|google uk english male/i.test(v.name);})||pool[pool.length>1?1:0];
+}
+
+function speakText(text, female, orb){
+  if(!window.speechSynthesis)return;
+  speechSynthesis.cancel();
+  var u=new SpeechSynthesisUtterance(text);
+  var v=getVoice(female); if(v) u.voice=v;
+  u.rate=female?.86:.82; u.pitch=female?1.12:.86; u.volume=1;
+  u.onstart=function(){if(orb)orb.setState('speaking');setOrbSt('Speaking…','go');};
+  u.onend=function(){if(orb)orb.setState('idle');setOrbSt('Tap mic or type to respond','');};
+  u.onerror=function(){if(orb)orb.setState('idle');setOrbSt('Tap mic or type to respond','');};
+  var ka=setInterval(function(){if(!speechSynthesis.speaking){clearInterval(ka);return;}speechSynthesis.pause();speechSynthesis.resume();},10000);
+  speechSynthesis.speak(u);
+}
+
+function unlockTTS(){
+  if(!window.speechSynthesis)return;
+  var s=new SpeechSynthesisUtterance(' '); s.volume=0; s.rate=10; speechSynthesis.speak(s);
+}
+
+/* ═══ SEND AI MESSAGE ═══ */
+function sendAI(text){
+  addMsg('ai',text);
+  if(O.train) O.train.setState('idle');
+  unlockTTS();
+  setTimeout(function(){speakText(text,true,O.train);},80);
+}
+
+/* ═══ HANDLE TRAINEE INPUT ═══ */
+async function handleInput(text){
+  if(!text||!text.trim())return;
+  var flags=analyzeMsg(text);
+  flags.forEach(function(f){issueLog.push(f);});
+  updateBadge();
+  var voiceAnalysis=analyzeTraineeVoice(text);
+  updateEmotions(text);
+  var flagTxt=flags.length>0?flags[0].text:null;
+  var confTxt=voiceAnalysis.note;
+  addMsg('you',text.trim(),flagTxt,confTxt);
+  chatHistory.push({role:'user',content:text.trim()});
+  if(O.train) O.train.setState('listening');
+  setOrbSt('Thinking…','go');
+  var sys = mode==='roleplay' ? CASES[currentCase].sys : SYS_DB;
+  var reply=await callClaude(chatHistory,sys,220);
+  if(!reply) reply = mode==='roleplay'
+    ? "I'm sorry… I'm not following. Can you please explain that more simply? I'm so scared right now."
+    : "What did you notice about the emotional impact of that response on the family?";
+  chatHistory.push({role:'assistant',content:reply});
+  addMsg('ai',reply);
+  if(O.train) O.train.setState('idle');
+  speakText(reply, mode==='roleplay', O.train);
+}
+
+/* ═══ TEXT SEND ═══ */
+function tapSend(){
+  unlockTTS();
+  var inp=document.getElementById('cinput'), txt=inp.value.trim();
+  if(!txt)return; inp.value=''; handleInput(txt);
+}
+
+/* ═══ MIC ENGINE ═══ */
+var micOn=false, recogObj=null, heard='', silenceTimer=null;
+
+function tapMic(){
+  unlockTTS();
+  if(micOn){stopMic();return;}
+  startMic();
+}
+
+function startMic(){
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){setOrbSt('Speech API not found — use Chrome','');document.getElementById('cinput').focus();return;}
+  heard=''; micOn=true; setMicUI(true);
+  if(O.train) O.train.setState('listening');
+  setOrbSt('Listening…','li');
+  runRecog(SR);
+}
+
+function runRecog(SR){
+  if(!micOn)return;
+  try{if(recogObj){recogObj.onstart=null;recogObj.onresult=null;recogObj.onerror=null;recogObj.onend=null;recogObj.abort();}}catch(e){}
+  recogObj=new SR();
+  recogObj.lang='en-US'; recogObj.continuous=false; recogObj.interimResults=true; recogObj.maxAlternatives=1;
+  clearTimeout(silenceTimer);
+  silenceTimer=setTimeout(function(){if(micOn&&!heard){stopMic();setOrbSt('No speech detected — try again','');}},8000);
+  recogObj.onstart=function(){setOrbSt('Listening… speak now','li');};
+  recogObj.onresult=function(e){
+    clearTimeout(silenceTimer);
+    var fin='',tmp='';
+    for(var i=0;i<e.results.length;i++){
+      if(e.results[i].isFinal)fin+=e.results[i][0].transcript;
+      else tmp+=e.results[i][0].transcript;
+    }
+    if(fin)heard+=fin;
+    var show=(heard+tmp).trim();
+    if(show)setOrbSt('❝ '+show.slice(-50),'li');
+  };
+  recogObj.onerror=function(e){
+    clearTimeout(silenceTimer);
+    if(e.error==='no-speech'){if(micOn)runRecog(SR);return;}
+    if(e.error==='aborted')return;
+    stopMic();
+    if(e.error==='not-allowed') setOrbSt('Mic blocked — allow in browser settings','');
+    else if(e.error==='network') setOrbSt('Network error','');
+    else if(e.error==='audio-capture') setOrbSt('No microphone found','');
+    else setOrbSt('Mic error: '+e.error,'');
+  };
+  recogObj.onend=function(){
+    clearTimeout(silenceTimer);
+    if(!micOn){
+      var txt=heard.trim();
+      if(txt)handleInput(txt);
+      else{if(O.train)O.train.setState('idle');setOrbSt('Tap mic or type to respond','');}
+      return;
+    }
+    if(heard){stopMic();handleInput(heard.trim());}
+    else{setTimeout(function(){runRecog(SR);},100);}
+  };
+  try{recogObj.start();}catch(e){stopMic();setOrbSt('Could not start mic: '+e.message,'');}
+}
+
+function stopMic(){
+  micOn=false; clearTimeout(silenceTimer); setMicUI(false);
+  try{recogObj&&recogObj.stop();}catch(e){}
+}
+
+function setMicUI(on){
+  var btn=document.getElementById('micBtn'),hint=document.getElementById('michint');
+  if(!btn)return;
+  if(on){btn.classList.add('rec');btn.textContent='⏹️';if(hint)hint.textContent='tap to stop';}
+  else{btn.classList.remove('rec');btn.textContent='🎙️';if(hint)hint.textContent='tap to speak';}
+}
+
+/* ═══ END SESSION → REPORT ═══ */
+var lastReport = null;
+
+async function endSession(){
+  if(window.speechSynthesis)speechSynthesis.cancel();
+  goScreen('mentor');
+  var ds=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('rdate').textContent=ds+' · Generating analysis…';
+  var c=CASES[currentCase];
+  document.getElementById('rCase').textContent=c.name+' — '+c.sub.split('·')[0].trim();
+  var dur = sessionStart ? Math.round((Date.now()-sessionStart)/60000)+'m' : '—';
+  document.getElementById('rDur').textContent=dur;
+  document.getElementById('rExch').textContent=Math.floor(chatHistory.length/2)+' exchanges';
+  var issueSummary=issueLog.length>0?issueLog.map(function(i){return i.text;}).join('; '):'No specific issues flagged';
+  var avgConf = confidenceLog.length>0 ? Math.round(confidenceLog.reduce(function(a,b){return a+b.score;},0)/confidenceLog.length) : 50;
+  var transcript=chatHistory.map(function(m){return m.role.toUpperCase()+': '+m.content;}).join('\n\n');
+  var prompt='Analyze this humanistic communication training session in pediatric neurology.\nCase: '+c.name+' ('+c.sub+')\nLive issues detected: '+issueSummary+'\nAverage trainee communication score: '+avgConf+'%\n\nTranscript:\n'+(transcript||'No conversation recorded.')+'\n\nReturn ONLY valid JSON, no markdown:\n{"date":"'+ds+'","scores":[{"label":"Empathy Score","grade":"B","note":"one sentence"},{"label":"Communication","grade":"B","note":"one sentence"},{"label":"Clarity","grade":"B","note":"one sentence"},{"label":"Emotional Response","grade":"C","note":"one sentence"},{"label":"Humanistic Index","grade":"B","note":"one sentence"}],"dimensions":[{"name":"Emotional Acknowledgment","score":70},{"name":"Non-judgmental Language","score":75},{"name":"Tone & Warmth","score":68},{"name":"Silence Comfort","score":52},{"name":"Family Inclusion","score":80},{"name":"Cultural Sensitivity","score":66}],"traineeProfile":{"confidence":"Developing","pacing":"Good","empathyMarkers":3,"questionsAsked":2,"keyStrength":"one phrase","keyWeakness":"one phrase"},"issues":["issue1","issue2","issue3"],"issueTypes":["jargon","empathy","tone"],"nextSteps":[{"title":"step","detail":"specific instruction"},{"title":"step","detail":"specific instruction"},{"title":"step","detail":"specific instruction"}],"memoryNote":"warm sentence","mentorOpener":"opening mentor sentence"}';
+  var raw=await callClaude([{role:'user',content:prompt}],null,1400);
+  var report;
+  try{report=JSON.parse((raw||'').replace(/```json|```/g,'').trim());}
+  catch(e){report=defaultReport(ds,c);}
+  lastReport=report;
+  renderReport(report,c);
+  document.getElementById('rdate').textContent=report.date;
+  var opener=report.mentorOpener||"Let's reflect on your session. I could see genuine care in your approach — let's build on that together. What felt most challenging?";
+  addMentorMsg('ai',opener);
+  mentorHist=[{role:'assistant',content:opener}];
+  if(O.mentor)O.mentor.setState('idle');
+  unlockTTS();
+  setTimeout(function(){speakText(opener,false,O.mentor);},100);
+}
+
+function defaultReport(ds,c){
+  return{date:ds,scores:[{label:'Empathy Score',grade:'B',note:'Warm presence but missed key emotional cues.'},{label:'Communication',grade:'B',note:'Mostly clear with occasional jargon.'},{label:'Clarity',grade:'B',note:'Explanations accessible to a layperson.'},{label:'Emotional Response',grade:'C',note:'Several disclosures went unacknowledged.'},{label:'Humanistic Index',grade:'B',note:'Good foundation with room to deepen.'}],dimensions:[{name:'Emotional Acknowledgment',score:72},{name:'Non-judgmental Language',score:78},{name:'Tone & Warmth',score:70},{name:'Silence Comfort',score:52},{name:'Family Inclusion',score:82},{name:'Cultural Sensitivity',score:66}],traineeProfile:{confidence:'Developing',pacing:'Good',empathyMarkers:2,questionsAsked:1,keyStrength:'Warm opening tone',keyWeakness:'Missed grief acknowledgment'},issues:['Medical jargon used without explanation','Emotional distress not acknowledged','Pacing too fast in key moments'],issueTypes:['jargon','empathy','tone'],nextSteps:[{title:'Therapeutic Silence',detail:'After an emotional disclosure, pause 4 full seconds before responding. Silence communicates presence.'},{title:'Feelings Before Facts',detail:'Always acknowledge the emotion fully before clinical information. "I hear how frightening this is…" before anything clinical.'},{title:'Replace Jargon',detail:'Practice lay language: instead of technical terms, use metaphors the family can hold onto.'}],memoryNote:'This session is the beginning of your humanistic practice. The care is there — now let it show in every pause.',mentorOpener:"Let's reflect on your session. I saw real care in your approach — let's build on that. What felt most challenging?"};
+}
+
+function renderReport(r,c){
+  var gcmap={A:'A',B:'B',C:'C',D:'D'};
+  var barcols=['#8fd4b0','#8fb8d4','#d4c08f','#d48fb0','#b08fd4','#8fd4d0'];
+  document.getElementById('sgrid').innerHTML=(r.scores||[]).map(function(s){
+    var g=(s.grade||'B').charAt(0),cl=gcmap[g]||'B';
+    return '<div class="scard '+cl+'"><div class="sc-lbl">'+s.label+'</div><div class="sc-v '+cl+'">'+s.grade+'</div><div class="sc-n">'+s.note+'</div></div>';
+  }).join('');
+  // trainee profile boxes
+  var tp=r.traineeProfile||{};
+  document.getElementById('vemoGrid').innerHTML=
+    '<div class="vemo-box"><div class="vemo-icon">🧠</div><div class="vemo-label">Confidence</div><div class="vemo-val" style="color:var(--teal)">'+(tp.confidence||'—')+'</div></div>'+
+    '<div class="vemo-box"><div class="vemo-icon">⚡</div><div class="vemo-label">Pacing</div><div class="vemo-val" style="color:var(--amber)">'+(tp.pacing||'—')+'</div></div>'+
+    '<div class="vemo-box"><div class="vemo-icon">❤️</div><div class="vemo-label">Empathy Markers</div><div class="vemo-val" style="color:#e87878">'+(tp.empathyMarkers||0)+'</div></div>'+
+    '<div class="vemo-box"><div class="vemo-icon">❓</div><div class="vemo-label">Questions Asked</div><div class="vemo-val" style="color:#8fb8d4">'+(tp.questionsAsked||0)+'</div></div>'+
+    '<div class="vemo-box" style="grid-column:span 2"><div class="vemo-icon">✨</div><div class="vemo-label">Key Strength</div><div class="vemo-val" style="color:#8fd4b0;font-size:.78rem;font-weight:400">'+(tp.keyStrength||'—')+'</div></div>';
+  document.getElementById('brows').innerHTML=(r.dimensions||[]).map(function(d,i){
+    return '<div class="brow"><span class="bname">'+d.name+'</span><div class="btrack"><div class="bfill" style="width:0%;background:'+barcols[i%barcols.length]+'" data-w="'+d.score+'"></div></div><span class="bpct">'+d.score+'%</span></div>';
+  }).join('');
+  setTimeout(function(){document.querySelectorAll('.bfill').forEach(function(el){el.style.width=el.getAttribute('data-w')+'%';});},120);
+  var typeMap={jargon:'jargon',empathy:'empathy',tone:'tone'};
+  document.getElementById('ipills').innerHTML=(r.issues||[]).map(function(issue,i){
+    var cls=typeMap[(r.issueTypes||[])[i]]||'tone';
+    return '<span class="ipill '+cls+'">⚠ '+issue+'</span>';
+  }).join('');
+  document.getElementById('nsteps').innerHTML=(r.nextSteps||[]).map(function(s,i){
+    return '<div class="nitem"><div class="nnum">'+(i+1)+'</div><div class="nbody"><h5>'+s.title+'</h5><p>'+s.detail+'</p></div></div>';
+  }).join('');
+  document.getElementById('mnote').innerHTML='<strong>Memory note:</strong> '+(r.memoryNote||'');
+}
+
+/* ═══ MENTOR CHAT ═══ */
+var mentorHist=[];
+
+async function sendMentor(){
+  unlockTTS();
+  var inp=document.getElementById('minput'),txt=inp.value.trim();
+  if(!txt)return; inp.value='';
+  addMentorMsg('you',txt);
+  mentorHist.push({role:'user',content:txt});
+  if(O.mentor)O.mentor.setState('listening');
+  var reply=await callClaude(mentorHist,SYS_MC,260);
+  if(!reply)reply="That's a really thoughtful question. The key is always to lead with the human — feelings before facts. What would you do differently in that opening moment?";
+  mentorHist.push({role:'assistant',content:reply});
+  addMentorMsg('ai',reply);
+  if(O.mentor)O.mentor.setState('idle');
+  speakText(reply,false,O.mentor);
+}
+
+/* ═══ PDF EXPORT ═══ */
+function exportPDF(){
+  if(!lastReport){alert('No report generated yet.');return;}
+  var r=lastReport;
+  try{
+    var doc=new window.jspdf.jsPDF();
+    var y=20;
+    doc.setFontSize(20); doc.setTextColor(100,200,180);
+    doc.text('Fellowmate — Session Report',20,y); y+=10;
+    doc.setFontSize(10); doc.setTextColor(150,170,190);
+    doc.text(r.date,20,y); y+=8;
+    var c=CASES[currentCase];
+    doc.text('Case: '+c.name+' — '+c.sub,20,y); y+=12;
+    doc.setFontSize(13); doc.setTextColor(200,220,220);
+    doc.text('Scores',20,y); y+=8;
+    doc.setFontSize(9); doc.setTextColor(160,180,200);
+    (r.scores||[]).forEach(function(s){
+      doc.text(s.label+': '+s.grade+' — '+s.note,20,y); y+=7;
+    });
+    y+=5;
+    doc.setFontSize(13); doc.setTextColor(200,220,220);
+    doc.text('Behavioral Dimensions',20,y); y+=8;
+    doc.setFontSize(9); doc.setTextColor(160,180,200);
+    (r.dimensions||[]).forEach(function(d){
+      doc.text(d.name+': '+d.score+'%',20,y); y+=7;
+    });
+    y+=5;
+    doc.setFontSize(13); doc.setTextColor(200,220,220);
+    doc.text('Issues Detected',20,y); y+=8;
+    doc.setFontSize(9); doc.setTextColor(160,180,200);
+    (r.issues||[]).forEach(function(i){
+      doc.text('• '+i,20,y); y+=7;
+    });
+    y+=5;
+    doc.setFontSize(13); doc.setTextColor(200,220,220);
+    doc.text('Next Steps',20,y); y+=8;
+    doc.setFontSize(9); doc.setTextColor(160,180,200);
+    (r.nextSteps||[]).forEach(function(s,i){
+      var lines=doc.splitTextToSize((i+1)+'. '+s.title+': '+s.detail,170);
+      doc.text(lines,20,y); y+=lines.length*7+3;
+    });
+    y+=5;
+    doc.setFontSize(10); doc.setTextColor(80,180,160);
+    var noteLines=doc.splitTextToSize('Memory note: '+(r.memoryNote||''),170);
+    doc.text(noteLines,20,y);
+    doc.save('Fellowmate_Session_Report.pdf');
+  }catch(e){alert('PDF export failed: '+e.message);}
+}
+
+/* ═══ VIDEO ═══ */
+function toggleVid(){document.getElementById('vpop').classList.toggle('on');}
+
+/* ═══ RESET ═══ */
+function resetSession(){
+  chatHistory=[]; issueLog=[]; confidenceLog=[]; mentorHist=[]; lastReport=null;
+  var msgs=document.getElementById('messages');
+  if(msgs) msgs.innerHTML='';
+  var mmsgs=document.getElementById('mmsgs');
+  if(mmsgs) mmsgs.innerHTML='';
+  document.getElementById('abadge').classList.remove('show');
+  document.getElementById('badgetxt').textContent='Issues detected';
+  setOrbSt('Tap mic to begin',''); setMicUI(false);
+  mode='roleplay';
+  document.getElementById('tab-rp').classList.add('on');
+  document.getElementById('tab-mn').classList.remove('on');
+  var confVal=document.getElementById('confVal');
+  var confSub=document.getElementById('confSub');
+  if(confVal){confVal.textContent='—';confVal.style.color='var(--teal)';}
+  if(confSub) confSub.textContent='Awaiting input';
+}
+
+/* ═══ DEVELOPER ═══ */
+var devRecOn=false;
+function toggleDevRec(){
+  devRecOn=!devRecOn;
+  var orb=document.getElementById('vrecOrb'),lbl=document.getElementById('vrecLbl');
+  orb.classList.toggle('rec',devRecOn); orb.textContent=devRecOn?'⏹️':'🎙️';
+  lbl.textContent=devRecOn?'Recording… tap to stop':'Saved ✓';
+  if(!devRecOn)setTimeout(function(){lbl.textContent='Tap to record';},2000);
+}
+
+function handleUpload(event,listId){
+  var files=event.target.files; if(!files||!files.length)return;
+  var list=document.getElementById(listId);
+  Array.from(files).forEach(function(file){
+    var icon=file.type.startsWith('video')?'🎬':file.type.startsWith('audio')?'🎵':'📄';
+    var size=(file.size/(1024*1024)).toFixed(1)+' MB';
+    var d=document.createElement('div'); d.className='fi';
+    d.innerHTML='<span class="fi-ic">'+icon+'</span><div class="fi-inf"><h6>'+file.name+'</h6><p>'+size+' · Processing…</p></div><span class="fibadge pnd">Processing</span>';
+    list.appendChild(d);
+    setTimeout(function(){
+      d.querySelector('.fibadge').textContent='Trained';
+      d.querySelector('.fibadge').className='fibadge ok';
+      d.querySelector('p').textContent=size+' · Indexed';
+    },2200);
+  });
+}
+</script>
+</body>
+</html>
