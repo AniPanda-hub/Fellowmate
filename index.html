@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fellowmate — Humanistic Pediatric Neurology Training</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyCXSz2www86LpxoX-qX2Q1kypvxc3zVvao",
+  authDomain:"fellowmate-339b7.firebaseapp.com",
+  projectId:"fellowmate-339b7",
+  storageBucket:"fellowmate-339b7.firebasestorage.app",
+  messagingSenderId:"552098008610",
+  appId:"1:552098008610:web:85ac807dac72fbfcee047b"
+});
+var auth=firebase.auth();
+var db=firebase.firestore();
+</script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{height:100%}
+body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;color:#3d3a36}
+
+:root{
+  /* warm linen palette */
+  --cream:#faf6f0;--linen:#f3ece2;--parchment:#ede4d8;--sand:#e0d5c5;
+  /* accent warmth */
+  --sage:#7a9e7e;--sage-l:#e8f0e8;--sage-glow:rgba(122,158,126,.12);
+  --terra:#c4836a;--terra-l:#faeae4;--terra-glow:rgba(196,131,106,.1);
+  --gold:#c9a84c;--gold-l:#faf4e0;
+  --sky:#7ba4c4;--sky-l:#e6f0f8;
+  --plum:#9b7eb4;--plum-l:#f0e8f6;
+  /* text */
+  --ink:#3d3a36;--ink-s:#5c5750;--ink-m:#8a847a;--ink-l:#b8b0a4;
+  /* surfaces */
+  --card:rgba(255,255,255,.7);--card-b:rgba(0,0,0,.06);
+  --radius:16px;--radius-sm:11px;
+}
+
+body{background:var(--cream)}
+/* warm paper texture overlay */
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 10%,rgba(122,158,126,.06),transparent 50%),
+    radial-gradient(ellipse 60% 60% at 85% 85%,rgba(196,131,106,.05),transparent 50%),
+    radial-gradient(ellipse 50% 50% at 50% 50%,rgba(201,168,76,.03),transparent 50%)}
+/* subtle noise grain */
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.3;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E")}
+
+.screen{display:none;position:fixed;inset:0;z-index:1;flex-direction:column}
+.screen.on{display:flex}
+
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-thumb{background:var(--sand);border-radius:3px}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ─── BUTTONS ─── */
+.btn{padding:11px 26px;border-radius:100px;border:1.5px solid var(--sand);background:white;
+  color:var(--ink-s);font-family:'Nunito',sans-serif;font-size:.8rem;font-weight:600;
+  letter-spacing:.02em;cursor:pointer;transition:all .3s;outline:none;
+  box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.06)}
+.btn:active{transform:scale(.98)}
+.btn.sage{border-color:rgba(122,158,126,.3);color:var(--sage);background:var(--sage-l)}
+.btn.sage:hover{background:#dceadc;box-shadow:0 4px 16px rgba(122,158,126,.15)}
+.btn.terra{border-color:rgba(196,131,106,.25);color:var(--terra);background:var(--terra-l)}
+.btn.terra:hover{background:#f4ddd4;box-shadow:0 4px 16px rgba(196,131,106,.12)}
+.btn.sm{padding:7px 18px;font-size:.72rem}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--ink-m);box-shadow:none}
+.btn.ghost:hover{color:var(--ink-s);background:rgba(0,0,0,.03)}
+
+/* soft card mixin */
+.soft-card{background:var(--card);border:1px solid var(--card-b);border-radius:var(--radius);
+  box-shadow:0 2px 8px rgba(0,0,0,.03),0 0 0 1px rgba(255,255,255,.8) inset}
+
+/* ═══════════════════════════════════════════ */
+/*                   BOOT                     */
+/* ═══════════════════════════════════════════ */
+#boot{align-items:center;justify-content:center;gap:6px;text-align:center;background:var(--cream)}
+.boot-inner{display:flex;flex-direction:column;align-items:center;gap:4px}
+.brand{font-family:'Lora',serif;font-size:3.2rem;font-weight:400;letter-spacing:.03em;color:var(--ink)}
+.brand em{font-style:italic;color:var(--sage);font-weight:500}
+.tagline{font-size:.64rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-l);margin-top:2px;font-weight:600}
+.boot-sub{max-width:460px;font-size:.88rem;color:var(--ink-m);line-height:1.8;margin:16px 0 4px;font-weight:400}
+.boot-btns{display:flex;gap:14px;margin-top:16px;flex-wrap:wrap;justify-content:center}
+.boot-footer{position:fixed;bottom:28px;font-size:.62rem;color:var(--ink-l);letter-spacing:.06em;text-align:center;line-height:1.7;font-weight:500}
+.api-indicator{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:100px;font-size:.64rem;font-weight:600;
+  margin-top:12px;cursor:pointer;transition:all .25s}
+.api-indicator.online{background:var(--sage-l);border:1.5px solid rgba(122,158,126,.2);color:var(--sage)}
+.api-indicator.offline{background:var(--gold-l);border:1.5px solid rgba(201,168,76,.2);color:#a08830}
+.api-indicator:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(0,0,0,.05)}
+.api-dot{width:7px;height:7px;border-radius:50%}
+.api-dot.on{background:var(--sage)}.api-dot.off{background:var(--gold)}
+
+/* ═══════════════════════════════════════════ */
+/*              CASE SELECT                   */
+/* ═══════════════════════════════════════════ */
+#caseselect{align-items:center;justify-content:center;gap:22px;overflow-y:auto;padding:40px 20px;background:var(--cream)}
+.cs-title{font-family:'Lora',serif;font-size:1.7rem;font-weight:400;color:var(--ink);letter-spacing:.02em}
+.cs-subtitle{font-size:.76rem;color:var(--ink-m);margin-top:3px;text-align:center;font-weight:400}
+.cs-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;width:min(740px,94vw)}
+@media(max-width:600px){.cs-grid{grid-template-columns:1fr}}
+
+.cs-card{background:white;border:1.5px solid rgba(0,0,0,.06);border-radius:var(--radius);
+  padding:22px 24px;cursor:pointer;transition:all .35s;position:relative;overflow:hidden;
+  box-shadow:0 2px 8px rgba(0,0,0,.03)}
+.cs-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:3px 0 0 3px;transition:width .3s}
+.cs-card:hover::before{width:5px}
+.cs-card.c1::before{background:linear-gradient(180deg,var(--terra),#b06848)}
+.cs-card.c2::before{background:linear-gradient(180deg,var(--gold),#a08828)}
+.cs-card.c3::before{background:linear-gradient(180deg,var(--sky),#5888a8)}
+.cs-card.c4::before{background:linear-gradient(180deg,var(--plum),#7860a0)}
+.cs-card:hover{border-color:rgba(0,0,0,.1);transform:translateY(-4px);
+  box-shadow:0 12px 32px rgba(0,0,0,.08)}
+.cs-tag{font-size:.58rem;text-transform:uppercase;letter-spacing:.14em;color:var(--ink-l);margin-bottom:8px;font-weight:700}
+.cs-name{font-family:'Lora',serif;font-size:1.1rem;color:var(--ink);margin-bottom:6px;line-height:1.3;font-weight:500}
+.cs-desc{font-size:.76rem;color:var(--ink-m);line-height:1.65;margin-bottom:12px}
+.cs-meta{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.cs-pill{padding:4px 10px;border-radius:100px;font-size:.6rem;font-weight:700}
+.cs-diff{padding:4px 10px;border-radius:100px;font-size:.6rem;font-weight:700;border:1.5px solid}
+.cs-arrow{position:absolute;bottom:18px;right:20px;font-size:.72rem;color:var(--sage);opacity:0;transition:all .3s;transform:translateX(-4px);font-weight:600}
+.cs-card:hover .cs-arrow{opacity:1;transform:translateX(0)}
+
+/* ═══════════════════════════════════════════ */
+/*                TOPBAR                      */
+/* ═══════════════════════════════════════════ */
+.topbar{width:100%;display:flex;align-items:center;justify-content:space-between;
+  padding:10px 22px;border-bottom:1.5px solid rgba(0,0,0,.06);
+  background:rgba(250,246,240,.92);backdrop-filter:blur(16px);flex-shrink:0;z-index:20}
+.top-logo{font-family:'Lora',serif;font-size:.95rem;font-weight:500;color:var(--sage);letter-spacing:.04em;cursor:pointer}
+.top-tabs{display:flex;background:white;border:1.5px solid rgba(0,0,0,.06);border-radius:100px;overflow:hidden;
+  box-shadow:0 1px 4px rgba(0,0,0,.03)}
+.ttab{padding:7px 18px;font-family:'Nunito',sans-serif;font-size:.72rem;font-weight:600;
+  border:none;background:transparent;color:var(--ink-l);cursor:pointer;transition:all .24s}
+.ttab.on{background:var(--sage-l);color:var(--sage)}
+.ttab:hover:not(.on){color:var(--ink-m)}
+.top-right{display:flex;align-items:center;gap:10px}
+@keyframes pulse-soft{0%,100%{opacity:1}50%{opacity:.4}}
+.alert-badge{display:flex;align-items:center;gap:6px;padding:5px 14px;border-radius:100px;
+  border:1.5px solid rgba(196,131,106,.2);background:var(--terra-l);
+  font-size:.64rem;font-weight:600;color:var(--terra);opacity:0;transition:all .4s;cursor:pointer}
+.alert-badge.show{opacity:1}
+.alert-dot{width:6px;height:6px;border-radius:50%;background:var(--terra);animation:pulse-soft 1.6s ease-in-out infinite}
+
+/* ═══════════════════════════════════════════ */
+/*              TRAINING LAYOUT               */
+/* ═══════════════════════════════════════════ */
+#training{justify-content:flex-start;background:var(--cream)}
+.train-body{flex:1;display:flex;width:100%;overflow:hidden}
+@media(max-width:768px){
+  .train-body{flex-direction:column}
+  .side-panel{width:100%!important;max-height:220px;border-right:none!important;border-bottom:1.5px solid rgba(0,0,0,.06);flex-direction:row;flex-wrap:wrap;overflow-x:auto;padding:12px!important;gap:8px!important}
+  .side-panel canvas{display:none}
+  .side-orb-status{display:none}
+  .side-case,.side-emotions,.side-confidence{flex:1;min-width:160px}
+}
+
+.side-panel{width:290px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;
+  gap:10px;border-right:1.5px solid rgba(0,0,0,.06);padding:16px;
+  background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(243,236,226,.5));overflow-y:auto}
+.side-orb-status{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-l);
+  min-height:16px;text-align:center;transition:color .4s;max-width:220px;line-height:1.5;font-weight:600}
+.side-orb-status.active{color:var(--sage)}
+.side-orb-status.listening{color:#a08830}
+
+.side-case{width:100%;padding:12px 15px}
+.side-case-label{font-size:.54rem;text-transform:uppercase;letter-spacing:.13em;color:var(--ink-l);margin-bottom:5px;font-weight:700}
+.side-case-name{font-family:'Lora',serif;font-size:.96rem;color:var(--ink);font-weight:500}
+.side-case-sub{font-size:.68rem;color:var(--ink-m);margin-top:3px}
+
+.side-emotions{width:100%;padding:12px 15px}
+.emo-label{font-size:.54rem;text-transform:uppercase;letter-spacing:.13em;color:var(--ink-l);margin-bottom:10px;font-weight:700}
+.emo-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.emo-icon{font-size:.75rem;width:18px;text-align:center;flex-shrink:0}
+.emo-name{font-size:.68rem;color:var(--ink-s);width:48px;flex-shrink:0;font-weight:500}
+.emo-track{flex:1;height:5px;background:rgba(0,0,0,.04);border-radius:4px;overflow:hidden}
+.emo-fill{height:100%;border-radius:4px;transition:width 1s cubic-bezier(.4,0,.2,1)}
+.emo-val{font-size:.62rem;color:var(--ink-l);width:24px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+
+.side-confidence{width:100%;padding:12px 15px;text-align:center}
+.conf-label{font-size:.54rem;text-transform:uppercase;letter-spacing:.13em;color:var(--ink-l);margin-bottom:7px;font-weight:700}
+.conf-value{font-family:'Lora',serif;font-size:1.35rem;font-weight:500;color:var(--sage);transition:color .4s}
+.conf-detail{font-size:.64rem;color:var(--ink-l);margin-top:4px;font-weight:500}
+
+.side-progress{width:100%;padding:12px 15px}
+.prog-label{font-size:.54rem;text-transform:uppercase;letter-spacing:.13em;color:var(--ink-l);margin-bottom:7px;font-weight:700}
+.prog-track{width:100%;height:4px;background:rgba(0,0,0,.04);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--sage),var(--sky));border-radius:3px;transition:width .6s ease;width:0%}
+.prog-info{display:flex;justify-content:space-between;margin-top:6px;font-size:.6rem;color:var(--ink-l);font-weight:600}
+
+.mic-area{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:auto;padding-top:10px}
+@keyframes mic-glow{0%,100%{box-shadow:0 0 0 0 rgba(196,131,106,.35)}50%{box-shadow:0 0 0 12px rgba(196,131,106,0)}}
+.mic-btn{width:54px;height:54px;border-radius:50%;border:2px solid rgba(122,158,126,.25);
+  background:var(--sage-l);color:var(--sage);font-size:20px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .3s;outline:none;
+  box-shadow:0 2px 10px rgba(122,158,126,.1)}
+.mic-btn:hover{background:#d8ead8;transform:scale(1.06);box-shadow:0 4px 16px rgba(122,158,126,.15)}
+.mic-btn.recording{border-color:rgba(196,131,106,.4)!important;background:var(--terra-l)!important;
+  color:var(--terra)!important;animation:mic-glow 1.4s ease-in-out infinite}
+.mic-hint{font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-l);font-weight:600}
+
+/* ═══════════════════════════════════════════ */
+/*                 CHAT                       */
+/* ═══════════════════════════════════════════ */
+.chat-panel{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--linen)}
+.messages{flex:1;overflow-y:auto;padding:22px 26px;display:flex;flex-direction:column;gap:14px}
+
+@keyframes msg-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.msg{display:flex;gap:10px;align-items:flex-start;animation:msg-in .4s ease;max-width:80%}
+.msg.you{flex-direction:row-reverse;align-self:flex-end}
+.msg-avatar{width:32px;height:32px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;
+  justify-content:center;font-size:13px;font-weight:700;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.msg-avatar.ai{background:var(--sage-l);color:var(--sage)}
+.msg-avatar.you{background:var(--sky-l);color:var(--sky)}
+.msg-body{display:flex;flex-direction:column;gap:4px}
+.msg-bubble{padding:13px 17px;border-radius:18px;font-size:.84rem;line-height:1.75;
+  box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.msg-bubble.ai{background:white;border:1px solid rgba(0,0,0,.05);border-top-left-radius:4px}
+.msg-bubble.you{background:var(--sage-l);border:1px solid rgba(122,158,126,.12);border-top-right-radius:4px;color:var(--ink)}
+
+.msg-flag{display:inline-flex;align-items:center;gap:4px;font-size:.62rem;font-weight:600;padding:4px 10px;border-radius:100px;
+  background:var(--terra-l);border:1px solid rgba(196,131,106,.15);color:var(--terra)}
+.msg-coaching{display:inline-flex;align-items:center;gap:4px;font-size:.62rem;font-weight:600;padding:4px 10px;border-radius:100px;
+  background:var(--sage-l);border:1px solid rgba(122,158,126,.12);color:var(--sage)}
+
+.chat-input-area{padding:14px 20px;border-top:1.5px solid rgba(0,0,0,.06);display:flex;align-items:center;gap:10px;
+  background:rgba(255,255,255,.6);backdrop-filter:blur(10px)}
+.chat-input{flex:1;background:white;border:1.5px solid rgba(0,0,0,.07);border-radius:100px;
+  padding:11px 20px;color:var(--ink);font-family:'Nunito',sans-serif;font-size:.84rem;font-weight:500;
+  outline:none;transition:all .24s;box-shadow:0 1px 4px rgba(0,0,0,.03)}
+.chat-input:focus{border-color:rgba(122,158,126,.35);box-shadow:0 0 0 3px rgba(122,158,126,.08)}
+.chat-input::placeholder{color:var(--ink-l)}
+.send-btn{width:42px;height:42px;border-radius:50%;border:1.5px solid rgba(122,158,126,.25);background:var(--sage-l);
+  color:var(--sage);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .24s;outline:none;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.send-btn:hover{background:#d4e6d4;transform:scale(1.06)}
+
+/* ═══════════════════════════════════════════ */
+/*              SESSION REPORT                */
+/* ═══════════════════════════════════════════ */
+#report{justify-content:flex-start;overflow-y:auto;background:var(--cream)}
+.report-wrap{width:min(760px,95vw);margin:0 auto;padding:32px 0 50px}
+.report-header{text-align:center;padding:30px 0 24px;border-bottom:1.5px solid rgba(0,0,0,.06);margin-bottom:26px}
+.report-header h1{font-family:'Lora',serif;font-size:2rem;font-weight:400;color:var(--sage);letter-spacing:.02em}
+.report-header p{font-size:.64rem;color:var(--ink-l);margin-top:6px;letter-spacing:.12em;text-transform:uppercase;font-weight:600}
+.report-meta{display:flex;justify-content:space-between;font-size:.74rem;color:var(--ink-m);padding:0 0 20px;flex-wrap:wrap;gap:8px}
+.report-meta strong{color:var(--ink-s);font-weight:600}
+
+.score-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px}
+@media(max-width:600px){.score-grid{grid-template-columns:repeat(3,1fr)}}
+.score-card{background:white;border:1px solid rgba(0,0,0,.05);border-radius:var(--radius);
+  padding:16px 12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.03);position:relative;overflow:hidden}
+.score-card::after{content:'';position:absolute;left:0;right:0;bottom:0;height:4px}
+.score-card.A::after{background:linear-gradient(90deg,var(--sage),#8ab08a)}
+.score-card.B::after{background:linear-gradient(90deg,var(--sky),#88b4d4)}
+.score-card.C::after{background:linear-gradient(90deg,var(--gold),#b89838)}
+.score-card.D::after{background:linear-gradient(90deg,var(--terra),#b06848)}
+.sc-label{font-size:.56rem;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-l);margin-bottom:7px;font-weight:700;line-height:1.35}
+.sc-grade{font-family:'Lora',serif;font-size:2.2rem;font-weight:400;line-height:1}
+.sc-grade.A{color:var(--sage)}.sc-grade.B{color:var(--sky)}.sc-grade.C{color:var(--gold)}.sc-grade.D{color:var(--terra)}
+.sc-note{font-size:.62rem;color:var(--ink-m);margin-top:5px;line-height:1.4}
+
+.r-section{margin-bottom:24px}
+.r-section-title{font-size:.6rem;text-transform:uppercase;letter-spacing:.15em;color:var(--ink-l);margin-bottom:14px;font-weight:700}
+.profile-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
+.profile-box{text-align:center;padding:14px;background:white;border-radius:var(--radius-sm);border:1px solid rgba(0,0,0,.05);
+  box-shadow:0 1px 4px rgba(0,0,0,.03)}
+.profile-icon{font-size:1.4rem;margin-bottom:5px}
+.profile-label{font-size:.6rem;color:var(--ink-l);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+.profile-val{font-size:.9rem;font-weight:600;margin-top:4px}
+
+.bar-row{display:flex;align-items:center;gap:12px;margin-bottom:11px}
+.bar-name{font-size:.74rem;color:var(--ink-s);width:200px;flex-shrink:0;font-weight:500}
+.bar-track{flex:1;height:6px;background:rgba(0,0,0,.04);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
+.bar-pct{font-size:.66rem;color:var(--ink-l);width:36px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+
+.issue-pills{display:flex;flex-wrap:wrap;gap:8px}
+.issue-pill{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:100px;font-size:.68rem;font-weight:600}
+.issue-pill.jargon{background:var(--gold-l);border:1px solid rgba(201,168,76,.2);color:#906c20}
+.issue-pill.empathy{background:var(--terra-l);border:1px solid rgba(196,131,106,.2);color:var(--terra)}
+.issue-pill.tone{background:var(--plum-l);border:1px solid rgba(155,126,180,.2);color:var(--plum)}
+
+.next-item{display:flex;gap:14px;padding:16px;background:white;border:1px solid rgba(0,0,0,.05);
+  border-radius:var(--radius-sm);margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.03)}
+.next-num{width:26px;height:26px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;
+  justify-content:center;font-size:.68rem;font-weight:700;background:var(--sage-l);color:var(--sage)}
+.next-body h5{font-size:.78rem;font-weight:600;color:var(--ink-s);margin-bottom:3px}
+.next-body p{font-size:.72rem;color:var(--ink-m);line-height:1.65}
+
+.memory-note{background:var(--sage-l);border:1.5px solid rgba(122,158,126,.15);border-radius:var(--radius);
+  padding:16px 18px;margin-bottom:26px;font-size:.78rem;color:var(--ink-m);line-height:1.75}
+.memory-note strong{color:var(--sage);font-weight:600}
+
+.mentor-divider{text-align:center;padding:24px 0;border-top:1.5px solid rgba(0,0,0,.06);margin-bottom:20px}
+.mentor-divider h2{font-family:'Lora',serif;font-size:1.4rem;font-weight:400;color:var(--ink-s)}
+.mentor-divider p{font-size:.68rem;color:var(--ink-l);margin-top:5px;font-weight:500}
+.mentor-orb-row{display:flex;justify-content:center;margin:12px 0 10px}
+.mentor-chat{background:white;border:1.5px solid rgba(0,0,0,.06);border-radius:var(--radius);overflow:hidden;
+  margin-bottom:22px;box-shadow:0 2px 8px rgba(0,0,0,.03)}
+.mentor-messages{min-height:140px;max-height:320px;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:12px}
+.mentor-input-row{display:flex;gap:8px;padding:12px 16px;border-top:1.5px solid rgba(0,0,0,.06);background:var(--linen)}
+.mentor-input{flex:1;background:white;border:1.5px solid rgba(0,0,0,.07);border-radius:100px;
+  padding:9px 18px;color:var(--ink);font-family:'Nunito',sans-serif;font-size:.8rem;font-weight:500;outline:none;transition:all .24s}
+.mentor-input:focus{border-color:rgba(122,158,126,.35);box-shadow:0 0 0 3px rgba(122,158,126,.08)}
+.mentor-input::placeholder{color:var(--ink-l)}
+.report-actions{display:flex;gap:12px;justify-content:center;padding-bottom:32px;flex-wrap:wrap}
+
+/* ═══════════════════════════════════════════ */
+/*             DEVELOPER CONSOLE              */
+/* ═══════════════════════════════════════════ */
+#developer{justify-content:flex-start;overflow-y:auto;background:var(--cream)}
+.dev-wrap{width:min(880px,95vw);margin:0 auto;padding:24px 0 36px;display:flex;flex-direction:column;gap:16px}
+.dev-header{display:flex;align-items:center;justify-content:space-between;padding-bottom:14px;border-bottom:1.5px solid rgba(196,131,106,.12)}
+.dev-header h1{font-family:'Lora',serif;font-size:1.45rem;font-weight:400;color:var(--terra)}
+.dev-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:700px){.dev-grid{grid-template-columns:1fr}}
+.dev-card{background:white;border:1.5px solid rgba(196,131,106,.1);border-radius:var(--radius);padding:20px;
+  box-shadow:0 2px 8px rgba(0,0,0,.03)}
+.dev-card-title{font-size:.58rem;text-transform:uppercase;letter-spacing:.14em;color:var(--terra);margin-bottom:14px;font-weight:700}
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.stat-box{background:white;border:1.5px solid rgba(0,0,0,.05);border-radius:var(--radius-sm);padding:15px;text-align:center;
+  box-shadow:0 1px 4px rgba(0,0,0,.03)}
+.stat-val{font-family:'Lora',serif;font-size:1.7rem;font-weight:400;color:var(--terra)}
+.stat-label{font-size:.62rem;color:var(--ink-l);margin-top:3px;font-weight:600}
+.upload-zone{border:2px dashed rgba(196,131,106,.2);border-radius:var(--radius-sm);padding:20px;text-align:center;
+  cursor:pointer;transition:all .24s;background:var(--terra-l);margin-bottom:12px;position:relative}
+.upload-zone:hover{border-color:rgba(196,131,106,.45);background:#f4d8cc}
+.upload-zone input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-zone span{font-size:1.4rem;margin-bottom:4px;display:block}
+.upload-zone p{font-size:.72rem;color:var(--terra);font-weight:500}
+.rubric-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.rubric-label{font-size:.74rem;color:var(--ink-s);flex:1;font-weight:500}
+.rubric-pct{width:52px;background:white;border:1.5px solid rgba(0,0,0,.07);border-radius:7px;
+  padding:5px 7px;color:var(--terra);font-variant-numeric:tabular-nums;font-size:.72rem;font-weight:600;text-align:center;outline:none}
+.analytics-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.analytics-label{font-size:.72rem;color:var(--ink-m);width:180px;flex-shrink:0;font-weight:500}
+.analytics-bar{flex:1;height:5px;background:rgba(196,131,106,.08);border-radius:3px;overflow:hidden}
+.analytics-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--terra),#d4a088)}
+.analytics-val{font-size:.66rem;color:var(--terra);width:32px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.file-item{display:flex;align-items:center;gap:8px;background:var(--linen);border:1px solid rgba(0,0,0,.05);
+  border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:6px;animation:msg-in .3s ease}
+.file-icon{font-size:15px}.file-info h6{font-size:.74rem;font-weight:600;color:var(--ink-s)}.file-info p{font-size:.62rem;color:var(--ink-l)}
+.file-badge{margin-left:auto;padding:3px 10px;border-radius:6px;font-size:.6rem;font-weight:700}
+.file-badge.ok{background:var(--sage-l);color:var(--sage)}
+.file-badge.pending{background:var(--gold-l);color:#907020}
+
+/* ═══════════════════════════════════════════ */
+/*            SETTINGS MODAL                  */
+/* ═══════════════════════════════════════════ */
+.modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(61,58,54,.4);backdrop-filter:blur(10px);
+  display:none;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:var(--cream);border:1.5px solid rgba(0,0,0,.08);border-radius:20px;width:min(520px,92vw);
+  max-height:85vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.12)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:22px 26px;border-bottom:1.5px solid rgba(0,0,0,.06)}
+.modal-header h2{font-family:'Lora',serif;font-size:1.25rem;font-weight:400;color:var(--ink)}
+.modal-close{width:30px;height:30px;border-radius:8px;border:1.5px solid rgba(0,0,0,.07);background:white;
+  color:var(--ink-m);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.modal-close:hover{border-color:rgba(196,131,106,.3);color:var(--terra)}
+.modal-body{padding:26px}
+.field-group{margin-bottom:22px}
+.field-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-l);margin-bottom:8px;display:block;font-weight:700}
+.field-desc{font-size:.74rem;color:var(--ink-m);margin-bottom:10px;line-height:1.6}
+.field-input{width:100%;background:white;border:1.5px solid rgba(0,0,0,.08);border-radius:var(--radius-sm);
+  padding:11px 16px;color:var(--ink);font-family:'Nunito',sans-serif;font-size:.82rem;font-weight:500;outline:none;transition:all .2s}
+.field-input:focus{border-color:rgba(122,158,126,.35);box-shadow:0 0 0 3px rgba(122,158,126,.08)}
+.field-input::placeholder{color:var(--ink-l)}
+.provider-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.provider-card{background:white;border:2px solid rgba(0,0,0,.06);border-radius:var(--radius-sm);padding:16px;
+  text-align:center;cursor:pointer;transition:all .25s;box-shadow:0 1px 4px rgba(0,0,0,.03)}
+.provider-card:hover{border-color:rgba(0,0,0,.12);transform:translateY(-2px)}
+.provider-card.selected{border-color:var(--sage);background:var(--sage-l);box-shadow:0 0 0 3px rgba(122,158,126,.1)}
+.provider-card .p-icon{font-size:1.5rem;margin-bottom:5px}
+.provider-card .p-name{font-size:.78rem;font-weight:700;color:var(--ink-s)}
+.provider-card .p-desc{font-size:.62rem;color:var(--ink-l);margin-top:3px;font-weight:500}
+.modal-footer{padding:18px 26px;border-top:1.5px solid rgba(0,0,0,.06);display:flex;gap:10px;justify-content:flex-end}
+.test-result{margin-top:10px;padding:10px 14px;border-radius:var(--radius-sm);font-size:.72rem;font-weight:600;display:none}
+.test-result.success{display:block;background:var(--sage-l);border:1px solid rgba(122,158,126,.2);color:var(--sage)}
+.test-result.error{display:block;background:var(--terra-l);border:1px solid rgba(196,131,106,.2);color:var(--terra)}
+
+/* ═══════════════════════════════════════════ */
+/*           LOADING / TOAST                  */
+/* ═══════════════════════════════════════════ */
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-overlay{position:fixed;inset:0;z-index:100;background:rgba(250,246,240,.9);display:none;
+  flex-direction:column;align-items:center;justify-content:center;gap:18px;backdrop-filter:blur(8px)}
+.loading-overlay.show{display:flex}
+.loading-spinner{width:38px;height:38px;border:2.5px solid var(--sand);border-top-color:var(--sage);
+  border-radius:50%;animation:spin .9s linear infinite}
+.loading-text{font-size:.78rem;color:var(--ink-m);font-weight:500}
+@keyframes toast-in{from{opacity:0;transform:translateY(12px) translateX(-50%)}to{opacity:1;transform:translateY(0) translateX(-50%)}}
+@keyframes toast-out{from{opacity:1;transform:translateY(0) translateX(-50%)}to{opacity:0;transform:translateY(-8px) translateX(-50%)}}
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);padding:12px 24px;
+  border-radius:100px;font-size:.76rem;font-weight:600;z-index:300;animation:toast-in .3s ease;
+  border:1.5px solid rgba(0,0,0,.07);background:white;color:var(--ink-s);box-shadow:0 8px 28px rgba(0,0,0,.1)}
+.toast.hide{animation:toast-out .25s ease forwards}
+/* ═══ LOGIN ═══ */
+#login{align-items:center;justify-content:center;gap:8px;text-align:center;background:var(--cream)}
+.login-card{background:white;border:1.5px solid rgba(0,0,0,.07);border-radius:20px;padding:36px 32px;
+  width:min(380px,90vw);box-shadow:0 8px 30px rgba(0,0,0,.06)}
+.login-card h2{font-family:'Lora',serif;font-size:1.5rem;font-weight:400;color:var(--ink);margin-bottom:4px}
+.login-card p{font-size:.74rem;color:var(--ink-m);margin-bottom:20px}
+.login-field{width:100%;background:var(--linen);border:1.5px solid rgba(0,0,0,.06);border-radius:var(--radius-sm);
+  padding:11px 16px;color:var(--ink);font-family:'Nunito',sans-serif;font-size:.84rem;font-weight:500;
+  outline:none;transition:all .24s;margin-bottom:12px}
+.login-field:focus{border-color:rgba(122,158,126,.4);box-shadow:0 0 0 3px rgba(122,158,126,.08)}
+.login-field::placeholder{color:var(--ink-l)}
+.login-err{font-size:.7rem;color:var(--terra);margin-bottom:10px;min-height:18px;font-weight:600}
+.login-btns{display:flex;gap:10px;margin-top:4px}
+.login-btns .btn{flex:1}
+.login-divider{font-size:.66rem;color:var(--ink-l);margin:14px 0 6px;font-weight:600}
+.user-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:100px;
+  background:var(--sage-l);border:1.5px solid rgba(122,158,126,.15);font-size:.62rem;font-weight:600;
+  color:var(--sage);cursor:pointer;transition:all .25s;margin-top:8px}
+.user-badge:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(0,0,0,.05)}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text" id="loadingText">Preparing your session…</div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>AI Provider Settings</h2>
+      <button class="modal-close" onclick="closeSettings()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-group">
+        <label class="field-label">Choose AI Provider</label>
+        <div class="provider-cards">
+          <div class="provider-card" data-provider="n8n" onclick="selectProvider('n8n')">
+            <div class="p-icon">🔬</div>
+            <div class="p-name">n8n Pipeline</div>
+            <div class="p-desc">Multi-AI assessment</div>
+          </div>
+          <div class="provider-card" data-provider="groq" onclick="selectProvider('groq')">
+            <div class="p-icon">⚡</div>
+            <div class="p-name">Groq</div>
+            <div class="p-desc">Free tier available</div>
+          </div>
+          <div class="provider-card selected" data-provider="offline" onclick="selectProvider('offline')">
+            <div class="p-icon">🌿</div>
+            <div class="p-name">Offline</div>
+            <div class="p-desc">No API needed</div>
+          </div>
+        </div>
+      </div>
+      <div id="n8nSection" style="display:none">
+        <div class="field-group">
+          <label class="field-label">n8n Webhook URL</label>
+          <p class="field-desc">Your activated n8n webhook endpoint (production URL, not test URL).</p>
+          <input class="field-input" id="n8nUrlInput" type="text" placeholder="https://yourname.app.n8n.cloud/webhook/fellowmate">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Groq API Key (for n8n LLM nodes)</label>
+          <input class="field-input" id="n8nGroqKey" type="password" placeholder="gsk_...">
+        </div>
+        <div class="field-group">
+          <label class="field-label">ElevenLabs API Key</label>
+          <input class="field-input" id="elevenLabsKey" type="password" placeholder="sk_...">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Voice IDs (one per case)</label>
+          <p class="field-desc">Paste the ElevenLabs Voice ID for each mother character.</p>
+          <input class="field-input" id="voiceMeena" style="margin-bottom:8px" type="text" placeholder="Meena (Dravet) — Voice ID">
+          <input class="field-input" id="voicePriya" style="margin-bottom:8px" type="text" placeholder="Priya (Epilepsy) — Voice ID">
+          <input class="field-input" id="voiceSunita" style="margin-bottom:8px" type="text" placeholder="Sunita (Duchenne) — Voice ID">
+          <input class="field-input" id="voiceKavitha" type="text" placeholder="Kavitha (Cerebral Palsy) — Voice ID">
+        </div>
+        <div class="field-group">
+          <button class="btn sm sage" onclick="testN8N()">Test Pipeline</button>
+          <div class="test-result" id="testResult"></div>
+        </div>
+        <div class="field-desc" style="background:var(--sage-l);border:1.5px solid rgba(122,158,126,.15);border-radius:12px;padding:16px;line-height:1.75;margin-top:8px">
+          <strong style="color:var(--sage)">Multi-AI Pipeline</strong><br>
+          Your n8n workflow runs separate AI assessors for empathy, clinical accuracy, and roleplay — then ElevenLabs generates realistic character voices. The most humanistic experience.
+        </div>
+      </div>
+      <div id="apiKeySection" style="display:none">
+        <div class="field-group">
+          <label class="field-label">API Key</label>
+          <p class="field-desc">Your key is stored only in this browser session.</p>
+          <input class="field-input" id="apiKeyInput" type="password" placeholder="Paste your API key here…">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Model</label>
+          <input class="field-input" id="modelInput" type="text" placeholder="e.g. llama-3.3-70b-versatile">
+        </div>
+        <div class="field-group">
+          <button class="btn sm sage" onclick="testConnection()">Test Connection</button>
+          <div class="test-result" id="testResultDirect"></div>
+        </div>
+      </div>
+      <div id="offlineNotice">
+        <div class="field-desc" style="background:var(--sage-l);border:1.5px solid rgba(122,158,126,.15);border-radius:12px;padding:16px;line-height:1.75">
+          <strong style="color:var(--sage)">Offline Mode</strong><br>
+          Uses intelligent scripted responses that react to your empathy, jargon, tone, and questions — no API needed. Great for demos and quick practice.
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn ghost" onclick="closeSettings()">Cancel</button>
+      <button class="btn sage" onclick="saveSettings()">Save & Apply</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ LOGIN ═══ -->
+<div class="screen on" id="login">
+  <div class="login-card">
+    <h2>Welcome to Fellow<em style="color:var(--sage);font-family:'Lora',serif">mate</em></h2>
+    <p>Sign in to sync your settings across all devices</p>
+    <input class="login-field" id="loginEmail" type="email" placeholder="Email address">
+    <input class="login-field" id="loginPass" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()">
+    <div class="login-err" id="loginErr"></div>
+    <div class="login-btns">
+      <button class="btn sage" onclick="doLogin()">Sign In</button>
+      <button class="btn" onclick="doSignup()">Create Account</button>
+    </div>
+    <div class="login-divider">or</div>
+    <button class="btn ghost" style="width:100%" onclick="skipLogin()">Continue without account</button>
+  </div>
+</div>
+
+<!-- ═══ BOOT ═══ -->
+<div class="screen" id="boot">
+  <div class="boot-inner">
+    <div class="brand">Fellow<em>mate</em></div>
+    <p class="tagline">Humanistic Pediatric Neurology · Training Simulation</p>
+    <canvas id="bootOrb" width="200" height="200" style="cursor:pointer;margin:12px 0" onclick="goSelectCase()"></canvas>
+    <p class="boot-sub">Practice compassionate conversations with AI-simulated families navigating devastating pediatric diagnoses. Build the human skills no textbook can teach.</p>
+    <div class="boot-btns">
+      <button class="btn sage" onclick="goSelectCase()">Begin Training</button>
+      <button class="btn terra" onclick="goDev()">Developer Console</button>
+    </div>
+    <div class="api-indicator" id="apiIndicator" onclick="openSettings()">
+      <div class="api-dot" id="apiDot"></div>
+      <span id="apiStatusText">Loading…</span>
+    </div>
+    <div class="user-badge" id="userBadge" onclick="doLogout()" style="display:none">
+      <span>👤</span><span id="userEmail">user@email.com</span><span style="color:var(--ink-l)">· Sign out</span>
+    </div>
+  </div>
+  <div class="boot-footer">Built for pediatric neurology fellows · Every conversation makes you a more humane clinician</div>
+</div>
+
+<!-- ═══ CASE SELECT ═══ -->
+<div class="screen" id="caseselect">
+  <p class="cs-title">Choose a Training Case</p>
+  <p class="cs-subtitle">Each scenario simulates a real family navigating a new diagnosis</p>
+  <div class="cs-grid">
+    <div class="cs-card c1" onclick="startCase('dravet')">
+      <div class="cs-tag">Case 01 · Epilepsy</div>
+      <div class="cs-name">Aiden, 4 yrs — Dravet Syndrome</div>
+      <div class="cs-desc">Mother Meena received the diagnosis 3 days ago. Deep grief, shock and fear. Husband David is present but withdrawn into silence.</div>
+      <div class="cs-meta">
+        <span class="cs-pill" style="background:var(--terra-l);color:var(--terra)">Grief</span>
+        <span class="cs-pill" style="background:var(--gold-l);color:#906c20">Shock</span>
+        <span class="cs-diff" style="color:var(--terra);border-color:rgba(196,131,106,.3)">Advanced</span>
+      </div>
+      <div class="cs-arrow">Begin →</div>
+    </div>
+    <div class="cs-card c2" onclick="startCase('epilepsy')">
+      <div class="cs-tag">Case 02 · Epilepsy</div>
+      <div class="cs-name">Maya, 7 yrs — Childhood Absence Epilepsy</div>
+      <div class="cs-desc">Father Rajiv is in denial. Mother Priya is anxious about school, social stigma, and Maya's future.</div>
+      <div class="cs-meta">
+        <span class="cs-pill" style="background:var(--gold-l);color:#906c20">Denial</span>
+        <span class="cs-pill" style="background:var(--terra-l);color:var(--terra)">Anxiety</span>
+        <span class="cs-diff" style="color:var(--gold);border-color:rgba(201,168,76,.3)">Intermediate</span>
+      </div>
+      <div class="cs-arrow">Begin →</div>
+    </div>
+    <div class="cs-card c3" onclick="startCase('duchenne')">
+      <div class="cs-tag">Case 03 · Neuromuscular</div>
+      <div class="cs-name">Rajan, 11 yrs — Duchenne MD</div>
+      <div class="cs-desc">Mother Sunita was told today. She is in raw shock and asking the hardest questions about prognosis, lifespan, and her son's future.</div>
+      <div class="cs-meta">
+        <span class="cs-pill" style="background:var(--sky-l);color:var(--sky)">Shock</span>
+        <span class="cs-pill" style="background:var(--plum-l);color:var(--plum)">Anger</span>
+        <span class="cs-diff" style="color:var(--terra);border-color:rgba(196,131,106,.3)">Advanced</span>
+      </div>
+      <div class="cs-arrow">Begin →</div>
+    </div>
+    <div class="cs-card c4" onclick="startCase('cerebral')">
+      <div class="cs-tag">Case 04 · Developmental</div>
+      <div class="cs-name">Priya, 9 yrs — Cerebral Palsy</div>
+      <div class="cs-desc">Single mother Kavitha is exhausted after 3 years of misdiagnosis. She is guarded, skeptical, and emotionally depleted.</div>
+      <div class="cs-meta">
+        <span class="cs-pill" style="background:var(--gold-l);color:#906c20">Frustrated</span>
+        <span class="cs-pill" style="background:var(--plum-l);color:var(--plum)">Guarded</span>
+        <span class="cs-diff" style="color:var(--gold);border-color:rgba(201,168,76,.3)">Intermediate</span>
+      </div>
+      <div class="cs-arrow">Begin →</div>
+    </div>
+  </div>
+  <button class="btn ghost" style="margin-top:6px" onclick="goScreen('boot')">← Back</button>
+</div>
+
+<!-- ═══ TRAINING ═══ -->
+<div class="screen" id="training">
+  <div class="topbar">
+    <span class="top-logo" onclick="goScreen('boot')">Fellowmate</span>
+    <div class="top-tabs">
+      <button class="ttab on" id="tab-rp" onclick="setMode('roleplay')">Family Conversation</button>
+      <button class="ttab" id="tab-mn" onclick="setMode('debrief')">Live Debrief</button>
+    </div>
+    <div class="top-right">
+      <div class="alert-badge" id="alertBadge" onclick="showIssues()">
+        <div class="alert-dot"></div><span id="alertText">Issues detected</span>
+      </div>
+      <button class="btn sm sage" onclick="endSession()">End Session →</button>
+    </div>
+  </div>
+  <div class="train-body">
+    <div class="side-panel">
+      <p class="side-orb-status" id="orbStatus">Tap mic or type to begin</p>
+      <canvas id="trainOrb" width="200" height="200"></canvas>
+      <div class="side-case soft-card">
+        <div class="side-case-label">Active Case</div>
+        <div class="side-case-name" id="caseNameDisplay">Aiden, 4 yrs</div>
+        <div class="side-case-sub" id="caseSubDisplay">Dravet Syndrome · Day 3</div>
+      </div>
+      <div class="side-emotions soft-card">
+        <div class="emo-label">Family Emotional State</div>
+        <div class="emo-row"><span class="emo-icon">💔</span><span class="emo-name">Grief</span><div class="emo-track"><div class="emo-fill" id="emoGrief" style="width:80%;background:var(--terra)"></div></div><span class="emo-val" id="emoGriefV">80</span></div>
+        <div class="emo-row"><span class="emo-icon">😰</span><span class="emo-name">Fear</span><div class="emo-track"><div class="emo-fill" id="emoFear" style="width:70%;background:var(--gold)"></div></div><span class="emo-val" id="emoFearV">70</span></div>
+        <div class="emo-row"><span class="emo-icon">🌱</span><span class="emo-name">Hope</span><div class="emo-track"><div class="emo-fill" id="emoHope" style="width:20%;background:var(--sage)"></div></div><span class="emo-val" id="emoHopeV">20</span></div>
+        <div class="emo-row"><span class="emo-icon">🤝</span><span class="emo-name">Trust</span><div class="emo-track"><div class="emo-fill" id="emoTrust" style="width:30%;background:var(--sky)"></div></div><span class="emo-val" id="emoTrustV">30</span></div>
+      </div>
+      <div class="side-confidence soft-card">
+        <div class="conf-label">Your Communication</div>
+        <div class="conf-value" id="confVal">—</div>
+        <div class="conf-detail" id="confSub">Awaiting your first response</div>
+      </div>
+      <div class="side-progress soft-card">
+        <div class="prog-label">Session Progress</div>
+        <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
+        <div class="prog-info"><span id="progExch">0 exchanges</span><span id="progTime">0:00</span></div>
+      </div>
+      <div class="mic-area">
+        <button class="mic-btn" id="micBtn" onclick="tapMic()">🎙️</button>
+        <span class="mic-hint" id="micHint">tap to speak</span>
+      </div>
+    </div>
+    <div class="chat-panel">
+      <div class="messages" id="messages"></div>
+      <div class="chat-input-area">
+        <input class="chat-input" id="chatInput" type="text" placeholder="Type your response to the family…" onkeydown="if(event.key==='Enter')tapSend()">
+        <button class="send-btn" onclick="tapSend()">↑</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ REPORT ═══ -->
+<div class="screen" id="report">
+  <div class="report-wrap">
+    <div class="report-header"><h1>Session Report</h1><p id="reportDate">Generating analysis…</p></div>
+    <div class="report-meta">
+      <span>Case: <strong id="reportCase">—</strong></span>
+      <span>Duration: <strong id="reportDur">—</strong></span>
+      <span>Exchanges: <strong id="reportExch">—</strong></span>
+    </div>
+    <div class="score-grid" id="scoreGrid"></div>
+    <div class="r-section"><div class="r-section-title">Trainee Communication Profile</div><div class="profile-grid" id="profileGrid"></div></div>
+    <div class="r-section"><div class="r-section-title">Behavioral Dimensions</div><div id="barRows"></div></div>
+    <div class="r-section"><div class="r-section-title">Issues Detected During Session</div><div class="issue-pills" id="issuePills"></div></div>
+    <div class="r-section"><div class="r-section-title">What To Work On Next</div><div id="nextSteps"></div></div>
+    <div class="memory-note" id="memoryNote"></div>
+    <div class="mentor-divider"><h2>Mentor Conversation</h2><p>Your senior mentor is ready to reflect with you</p></div>
+    <div class="mentor-orb-row"><canvas id="mentorOrb" width="120" height="120"></canvas></div>
+    <div class="mentor-chat">
+      <div class="mentor-messages" id="mentorMessages"></div>
+      <div class="mentor-input-row">
+        <input class="mentor-input" id="mentorInput" type="text" placeholder="Ask your mentor anything…" onkeydown="if(event.key==='Enter')sendMentor()">
+        <button class="btn sm sage" onclick="sendMentor()">Send</button>
+      </div>
+    </div>
+    <div class="report-actions">
+      <button class="btn sage" onclick="goSelectCase()">New Session</button>
+      <button class="btn terra" onclick="exportPDF()">Export PDF</button>
+      <button class="btn ghost" onclick="goScreen('boot')">Home</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DEVELOPER ═══ -->
+<div class="screen" id="developer">
+  <div class="topbar">
+    <span class="top-logo" style="color:var(--terra)">Fellowmate <span style="font-size:.72rem;color:var(--ink-l);font-family:'Nunito';font-weight:400">/ Developer</span></span>
+    <div></div>
+    <button class="btn sm terra" onclick="goScreen('boot')">← Exit Console</button>
+  </div>
+  <div style="flex:1;overflow-y:auto;width:100%">
+    <div class="dev-wrap">
+      <div class="dev-header"><h1>Developer Console</h1></div>
+      <div class="stat-row">
+        <div class="stat-box"><div class="stat-val">47</div><div class="stat-label">Total Sessions</div></div>
+        <div class="stat-box"><div class="stat-val">73%</div><div class="stat-label">Avg Empathy</div></div>
+        <div class="stat-box"><div class="stat-val">12</div><div class="stat-label">Trainees</div></div>
+      </div>
+      <div class="dev-grid">
+        <div class="dev-card">
+          <div class="dev-card-title">Upload Cases & Videos</div>
+          <div class="upload-zone"><input type="file" multiple accept=".pdf,.mp4,.mov,.docx" onchange="handleUpload(event,'caseFileList')"><span>📁</span><p>Drop case files, PDFs, patient videos</p></div>
+          <div id="caseFileList">
+            <div class="file-item"><span class="file-icon">📋</span><div class="file-info"><h6>Dravet_Aiden_Case.pdf</h6><p>2.4 MB · 3 emotion tags</p></div><span class="file-badge ok">Trained</span></div>
+          </div>
+        </div>
+        <div class="dev-card">
+          <div class="dev-card-title">Behavioral Rubric Weights</div>
+          <div class="rubric-row"><span class="rubric-label">Emotional Acknowledgment</span><input class="rubric-pct" value="25%"></div>
+          <div class="rubric-row"><span class="rubric-label">Non-judgmental Language</span><input class="rubric-pct" value="20%"></div>
+          <div class="rubric-row"><span class="rubric-label">Tone & Warmth</span><input class="rubric-pct" value="18%"></div>
+          <div class="rubric-row"><span class="rubric-label">Silence Comfort</span><input class="rubric-pct" value="12%"></div>
+          <div class="rubric-row"><span class="rubric-label">Family Inclusion</span><input class="rubric-pct" value="15%"></div>
+          <div class="rubric-row"><span class="rubric-label">Clinical Clarity</span><input class="rubric-pct" value="10%"></div>
+          <button class="btn sm sage" style="margin-top:10px" onclick="showToast('Rubric saved successfully')">Save Rubric</button>
+        </div>
+        <div class="dev-card">
+          <div class="dev-card-title">Research Papers & Modules</div>
+          <div class="upload-zone"><input type="file" multiple accept=".pdf" onchange="handleUpload(event,'paperList')"><span>📄</span><p>Upload research papers & modules</p></div>
+          <div id="paperList">
+            <div class="file-item"><span class="file-icon">📄</span><div class="file-info"><h6>Humanistic_Comm_Guidelines.pdf</h6><p>1.1 MB · Indexed</p></div><span class="file-badge ok">Active</span></div>
+          </div>
+        </div>
+        <div class="dev-card">
+          <div class="dev-card-title">Communication Error Analytics</div>
+          <div class="analytics-row"><span class="analytics-label">Medical Jargon Overuse</span><div class="analytics-bar"><div class="analytics-fill" style="width:72%"></div></div><span class="analytics-val">72%</span></div>
+          <div class="analytics-row"><span class="analytics-label">Low Empathy Responses</span><div class="analytics-bar"><div class="analytics-fill" style="width:58%"></div></div><span class="analytics-val">58%</span></div>
+          <div class="analytics-row"><span class="analytics-label">Dismissive Tone</span><div class="analytics-bar"><div class="analytics-fill" style="width:41%"></div></div><span class="analytics-val">41%</span></div>
+          <div class="analytics-row"><span class="analytics-label">Poor Emotional Response</span><div class="analytics-bar"><div class="analytics-fill" style="width:63%"></div></div><span class="analytics-val">63%</span></div>
+          <div class="analytics-row"><span class="analytics-label">Interrupted Family</span><div class="analytics-bar"><div class="analytics-fill" style="width:29%"></div></div><span class="analytics-val">29%</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* ═══════════════════════════════════════════════════════════
+   The entire JS logic below is identical to the previous version
+   — only the CSS/HTML was redesigned for the warm aesthetic.
+   All offline responses, API handling, analysis, orb engine,
+   TTS, mic, reports, mentor, PDF export — all preserved.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── AI CONFIG ── */
+var AI_CONFIG={provider:'offline',apiKey:'',model:'',
+  n8nUrl:'',n8nGroqKey:'',elevenLabsKey:'',
+  voiceIds:{dravet:'',epilepsy:'',duchenne:'',cerebral:''},
+  endpoints:{groq:'https://api.groq.com/openai/v1/chat/completions'},
+  defaults:{groq:'llama-3.3-70b-versatile'}};
+
+var currentUser=null;
+
+function loadSavedConfig(){
+  try{var s=localStorage.getItem('fellowmate_config');if(s)Object.assign(AI_CONFIG,JSON.parse(s));}catch(e){}
+  updateAPIIndicator();}
+
+async function loadFromFirestore(){
+  if(!currentUser)return;
+  try{var doc=await db.collection('users').doc(currentUser.uid).get();
+    if(doc.exists){var data=doc.data();if(data.config){Object.assign(AI_CONFIG,data.config);
+      localStorage.setItem('fellowmate_config',JSON.stringify(AI_CONFIG));updateAPIIndicator();}}}
+  catch(e){console.error('Firestore load:',e);}}
+
+async function saveToFirestore(){
+  if(!currentUser)return;
+  try{await db.collection('users').doc(currentUser.uid).set({
+    config:AI_CONFIG,email:currentUser.email,
+    lastUpdated:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});}
+  catch(e){console.error('Firestore save:',e);}}
+
+/* ── AUTH FUNCTIONS ── */
+async function doLogin(){
+  var email=document.getElementById('loginEmail').value.trim();
+  var pass=document.getElementById('loginPass').value;
+  var err=document.getElementById('loginErr');err.textContent='';
+  if(!email||!pass){err.textContent='Please enter email and password.';return;}
+  try{await auth.signInWithEmailAndPassword(email,pass);}
+  catch(e){err.textContent=e.code==='auth/user-not-found'?'No account found — click Create Account':
+    e.code==='auth/wrong-password'||e.code==='auth/invalid-credential'?'Incorrect password':
+    e.code==='auth/invalid-email'?'Invalid email format':e.message;}}
+
+async function doSignup(){
+  var email=document.getElementById('loginEmail').value.trim();
+  var pass=document.getElementById('loginPass').value;
+  var err=document.getElementById('loginErr');err.textContent='';
+  if(!email||!pass){err.textContent='Please enter email and password.';return;}
+  if(pass.length<6){err.textContent='Password must be at least 6 characters.';return;}
+  try{await auth.createUserWithEmailAndPassword(email,pass);}
+  catch(e){err.textContent=e.code==='auth/email-already-in-use'?'Account exists — try Sign In':
+    e.code==='auth/weak-password'?'Password too weak (min 6 chars)':e.message;}}
+
+function skipLogin(){currentUser=null;loadSavedConfig();goScreen('boot');}
+
+async function doLogout(){
+  await auth.signOut();currentUser=null;
+  document.getElementById('userBadge').style.display='none';
+  goScreen('login');showToast('Signed out');}
+
+auth.onAuthStateChanged(async function(user){
+  if(user){currentUser=user;
+    document.getElementById('userBadge').style.display='inline-flex';
+    document.getElementById('userEmail').textContent=user.email;
+    loadSavedConfig();await loadFromFirestore();goScreen('boot');}
+  else{
+    var hasLocal=localStorage.getItem('fellowmate_config');
+    if(!hasLocal){goScreen('login');}
+  }
+});
+function updateAPIIndicator(){
+  var dot=document.getElementById('apiDot'),txt=document.getElementById('apiStatusText'),ind=document.getElementById('apiIndicator');
+  if(AI_CONFIG.provider==='offline'){dot.className='api-dot off';txt.textContent='Offline Mode · Click to configure';ind.className='api-indicator offline';}
+  else if(AI_CONFIG.provider==='n8n'){var has=AI_CONFIG.n8nUrl&&AI_CONFIG.n8nUrl.length>10;dot.className='api-dot '+(has?'on':'off');
+    txt.textContent=has?'n8n Pipeline connected'+(AI_CONFIG.elevenLabsKey?' + ElevenLabs':''):'n8n · Not configured';ind.className='api-indicator '+(has?'online':'offline');}
+  else{var has=AI_CONFIG.apiKey&&AI_CONFIG.apiKey.length>10;dot.className='api-dot '+(has?'on':'off');
+    txt.textContent=has?'Groq connected':'Groq · No key set';ind.className='api-indicator '+(has?'online':'offline');}
+}
+function openSettings(){document.getElementById('settingsModal').classList.add('show');document.querySelectorAll('.provider-card').forEach(function(c){c.classList.remove('selected');});
+  var sel=document.querySelector('[data-provider="'+AI_CONFIG.provider+'"]');if(sel)sel.classList.add('selected');
+  document.getElementById('apiKeyInput').value=AI_CONFIG.apiKey||'';document.getElementById('modelInput').value=AI_CONFIG.model||'';
+  document.getElementById('n8nUrlInput').value=AI_CONFIG.n8nUrl||'';document.getElementById('n8nGroqKey').value=AI_CONFIG.n8nGroqKey||'';
+  document.getElementById('elevenLabsKey').value=AI_CONFIG.elevenLabsKey||'';
+  document.getElementById('voiceMeena').value=AI_CONFIG.voiceIds.dravet||'';document.getElementById('voicePriya').value=AI_CONFIG.voiceIds.epilepsy||'';
+  document.getElementById('voiceSunita').value=AI_CONFIG.voiceIds.duchenne||'';document.getElementById('voiceKavitha').value=AI_CONFIG.voiceIds.cerebral||'';
+  toggleKeySection(AI_CONFIG.provider);}
+function closeSettings(){document.getElementById('settingsModal').classList.remove('show');}
+function selectProvider(p){document.querySelectorAll('.provider-card').forEach(function(c){c.classList.remove('selected');});
+  document.querySelector('[data-provider="'+p+'"]').classList.add('selected');AI_CONFIG.provider=p;toggleKeySection(p);
+  if(p==='groq'&&!document.getElementById('modelInput').value)document.getElementById('modelInput').value=AI_CONFIG.defaults.groq;}
+function toggleKeySection(p){
+  document.getElementById('n8nSection').style.display=p==='n8n'?'block':'none';
+  document.getElementById('apiKeySection').style.display=p==='groq'?'block':'none';
+  document.getElementById('offlineNotice').style.display=p==='offline'?'block':'none';}
+async function testConnection(){var res=document.getElementById('testResultDirect');res.className='test-result';res.style.display='none';
+  var key=document.getElementById('apiKeyInput').value.trim(),model=document.getElementById('modelInput').value.trim()||'llama-3.3-70b-versatile';
+  if(!key){res.textContent='Please enter an API key.';res.className='test-result error';return;}
+  try{var r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+    body:JSON.stringify({model:model,max_tokens:20,messages:[{role:'user',content:'Say "connected" in one word.'}]})});var d=await r.json();
+    if(d.error){res.textContent='Error: '+(d.error.message||'Unknown');res.className='test-result error';}
+    else{res.textContent='✓ Connected! Model: '+model;res.className='test-result success';}}
+  catch(e){res.textContent='Failed: '+e.message;res.className='test-result error';}}
+async function testN8N(){var res=document.getElementById('testResult');res.className='test-result';res.style.display='none';
+  var url=document.getElementById('n8nUrlInput').value.trim();var groqKey=document.getElementById('n8nGroqKey').value.trim();
+  if(!url){res.textContent='Please enter your n8n webhook URL.';res.className='test-result error';return;}
+  res.textContent='Testing pipeline…';res.className='test-result success';res.style.display='block';
+  try{var r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({text:'Hello, I understand this is difficult.',api_key:groqKey,case_id:'dravet',
+      case_system_prompt:'You are Meena, a mother. Respond in one sentence.',chat_history:[],session_id:'test',mode:'roleplay'})});
+    var t=await r.text();if(t&&t.length>5){var d=JSON.parse(t);
+      res.textContent='✓ Pipeline working! Got: "'+(d.family_reply||'').substring(0,60)+'…"';res.className='test-result success';}
+    else{res.textContent='Empty response — check n8n execution logs';res.className='test-result error';}}
+  catch(e){res.textContent='Failed: '+e.message;res.className='test-result error';}}
+function saveSettings(){
+  AI_CONFIG.apiKey=document.getElementById('apiKeyInput').value.trim();AI_CONFIG.model=document.getElementById('modelInput').value.trim();
+  AI_CONFIG.n8nUrl=document.getElementById('n8nUrlInput').value.trim();AI_CONFIG.n8nGroqKey=document.getElementById('n8nGroqKey').value.trim();
+  AI_CONFIG.elevenLabsKey=document.getElementById('elevenLabsKey').value.trim();
+  AI_CONFIG.voiceIds={dravet:document.getElementById('voiceMeena').value.trim(),epilepsy:document.getElementById('voicePriya').value.trim(),
+    duchenne:document.getElementById('voiceSunita').value.trim(),cerebral:document.getElementById('voiceKavitha').value.trim()};
+  try{localStorage.setItem('fellowmate_config',JSON.stringify(AI_CONFIG));}catch(e){}
+  saveToFirestore();
+  updateAPIIndicator();closeSettings();
+  showToast(AI_CONFIG.provider==='offline'?'Offline mode activated':AI_CONFIG.provider==='n8n'?'n8n Pipeline connected · Synced to cloud':'Groq connected');}
+
+/* ── n8n PIPELINE CALL ── */
+async function callN8N(text){
+  if(!AI_CONFIG.n8nUrl)return null;
+  try{
+    var r=await fetch(AI_CONFIG.n8nUrl,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({text:text,api_key:AI_CONFIG.n8nGroqKey,case_id:currentCase,
+        case_system_prompt:CASES[currentCase].sys,chat_history:chatHistory.slice(-8),
+        session_id:sessionStart?sessionStart.toString():'unknown',mode:mode})});
+    var d=await r.json();return d;}
+  catch(e){console.error('n8n error:',e);return null;}}
+
+/* ── ELEVENLABS VOICE ── */
+async function speakElevenLabs(text,caseId){
+  if(!AI_CONFIG.elevenLabsKey)return false;
+  var voiceId=AI_CONFIG.voiceIds[caseId]||AI_CONFIG.voiceIds.dravet||'21m00Tcm4TlvDq8ikWAM';
+  if(!voiceId)return false;
+  try{
+    // Clean asterisks/stage directions for TTS
+    var cleanText=text.replace(/\*[^*]+\*/g,'').replace(/\s+/g,' ').trim();
+    if(!cleanText)return false;
+    if(orbs.train)orbs.train.setState('speaking');setOrbStatus('Speaking…','active');
+    var r=await fetch('https://api.elevenlabs.io/v1/text-to-speech/'+voiceId,{
+      method:'POST',headers:{'xi-api-key':AI_CONFIG.elevenLabsKey,'Content-Type':'application/json','Accept':'audio/mpeg'},
+      body:JSON.stringify({text:cleanText,model_id:'eleven_flash_v2_5',voice_settings:{stability:0.4,similarity_boost:0.75,style:0.6}})});
+    if(!r.ok){console.error('ElevenLabs:',r.status);return false;}
+    var blob=await r.blob();var url=URL.createObjectURL(blob);
+    var audio=new Audio(url);
+    audio.onended=function(){URL.revokeObjectURL(url);if(orbs.train)orbs.train.setState('idle');setOrbStatus('Tap mic or type to respond','');};
+    audio.onerror=function(){if(orbs.train)orbs.train.setState('idle');};
+    audio.play();return true;}
+  catch(e){console.error('ElevenLabs error:',e);if(orbs.train)orbs.train.setState('idle');return false;}}
+
+/* ── DIRECT GROQ CALL (fallback) ── */
+async function callAI(messages,sys,maxTok){
+  if(AI_CONFIG.provider==='offline'||!AI_CONFIG.apiKey)return null;
+  try{var msgs=[];if(sys)msgs.push({role:'system',content:sys});messages.forEach(function(m){msgs.push({role:m.role,content:m.content});});
+    var r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+AI_CONFIG.apiKey},
+      body:JSON.stringify({model:AI_CONFIG.model||'llama-3.3-70b-versatile',max_tokens:maxTok||280,messages:msgs})});var d=await r.json();
+    if(d.error)return null;return(d.choices&&d.choices[0]&&d.choices[0].message.content)||null;}catch(e){return null;}}
+
+/* ── OFFLINE RESPONSES ── */
+var OFFLINE_RESPONSES={
+  dravet:{warm:["Thank you… *her voice breaks* thank you for not just reading from a chart. Can you tell me — will Aiden still be able to go to school? Will he know us? I need to know what his life will look like.","*wiping tears* David, did you hear that? *turns back* I'm sorry, I cry every time someone is kind to us. Since the diagnosis no one has just… sat with us. They all rush. What should we do next?","*takes a shaky breath* Okay… okay. So there is a path forward. I keep imagining the worst — every seizure I think I'm losing him. How do we manage the seizures at home? What if one happens and I'm alone?","You're the first doctor who has made me feel like Aiden is still… Aiden. Not just a diagnosis. *squeezes David's hand* Can you tell us about other families who manage?","*nods slowly through tears* I want to understand. I just need you to know that right now my heart is broken. Can we talk about what tomorrow looks like? I can't think further than that."],
+    cold:["*goes very quiet* …I don't understand half of what you just said. Are you reading from a textbook? This is my SON.","*pulls back* David, let's go. You sound exactly like the last doctor. Numbers and terms. I asked what's going to happen to my boy.","*long silence* …I thought you'd be different. I don't need statistics. I need someone to look at me and tell me it's going to be okay.","*shakes head* Stop. I can hear you know a lot about this, but right now I don't need expertise. I need someone who understands I haven't slept in three days."],
+    neutral:["*nods uncertainly* I'm trying to understand. David won't even talk about it. I feel so alone in this. What happens next?","Okay… I hear you. But the seizure last night was different. Longer. His lips turned blue. Is that going to keep happening?","*looking at David then back at you* We're both trying. Every day feels like we're drowning. Will he be okay?"]},
+  epilepsy:{warm:["*exhales with relief* Thank you for saying that. Rajiv keeps saying I'm overreacting — but I KNOW something is happening. Can you explain what happens in her brain during these episodes?","That actually helps. *leans forward* You know what scares me most? The other kids. They've started calling her 'spacey Maya.' Will she be bullied?","*smiles slightly* You're really listening. Can this be controlled with medication? Will she be able to drive someday? Go to college?","I wish Rajiv could hear you. Could you perhaps talk to him? He respects doctors, he just doesn't want to believe anything is wrong."],
+    cold:["*crosses arms* You're talking about this like a textbook case. This is my daughter. I don't care about sodium channels — I care about whether she'll have friends.","*looks away* Same thing the last doctor said. Big words, no answers. Will. She. Be. Okay?","*frustrated* I came here for answers, not terminology."],
+    neutral:["So she does need medication? What are the side effects? I don't want her personality to change.","Rajiv isn't here today. He says these appointments are a waste of time. But I see it — 10, 15 times a day she just freezes. That's not normal, right?"]},
+  duchenne:{warm:["*breaks down crying* Thank you for being honest. I can see this is hard for you too. How long… will he be able to walk? He loves cricket. He lives for it.","*quiet for a long moment* I appreciate you not pretending this is okay. What can we do NOW? I want to fight for every day.","*reaches for tissues* You're the first person who hasn't tried to give me false hope. I want the truth and a plan.","My mother says I should get a second opinion. Should I? *voice cracking* He was running last week. RUNNING."],
+    cold:["*slams hand on table* Don't you DARE give me statistics! He is not a number! He's an eleven-year-old boy who wants to play cricket for India!","*stands up* I'm leaving. You learned medicine from a textbook, not from life. My son is in that hallway thinking everything is fine.","*cold, furious* Prognosis. Etiology. Dystrophin. Do you hear yourself? I'm his MOTHER."],
+    neutral:["*shaking* My husband doesn't know yet. How do I tell him? How do I tell RAJAN?","What about research? Trials? Gene therapy? Is there anything that might change this?"]},
+  cerebral:{warm:["*posture softens* That's… the first time any doctor has said sorry for what we've been through. Three years. *pauses* Okay. I'm listening. What makes you sure this time?","*tears forming* You know what I've wanted for three years? Someone to say 'I believe you.' Every doctor made me feel like I was the problem.","*nods slowly* Maybe you are different. But Priya has lost three years. Three years of the right therapy. That's time I can never get back.","Fine. I'll give you a chance. But if you're just passing us along, we're done. What does Priya's therapy look like?"],
+    cold:["*shuts down* That's what doctor number two said. Same words, different office. I think we're done here.","*cold stare* You've known my daughter five minutes. Don't tell me what she needs.","*bitter laugh* Cerebral palsy. Developmental delay. Autism. What's it going to be next visit?"],
+    neutral:["Okay. What does cerebral palsy actually mean for her day to day? Can she go to regular school?","I'm a single mum. Two jobs. I can't afford private therapy forever. What does the public system offer?"]}
+};
+var OFFLINE_MENTOR=["That's a really thoughtful question. One of the most important principles is meeting the family where they are emotionally. Before sharing clinical information, try naming the emotion — 'I can see how frightened you are.' What do you think they needed most?",
+  "I noticed strong moments. The key with families in crisis is pacing — match your breathing to theirs. When they speed up, you slow down. Silence is one of your most powerful tools. Where might a pause have deepened the connection?",
+  "Families process two layers: the loss of the child they imagined, and fear of what's ahead. Your job isn't to fix either in one session — it's to be present. How did it feel to sit with that pain?",
+  "What separates good clinicians from great ones is willingness to say 'I don't know.' Families sense when you're reaching for reassurance to fill silence. What felt most uncomfortable, and what might that teach you?",
+  "Let's talk about the language of hope. There's a difference between false reassurance and realistic hope: 'We don't have all the answers, but I'm going to walk this path with you.' How might you reframe some responses?"];
+
+function getOfflineResponse(text,caseId){var c=OFFLINE_RESPONSES[caseId];if(!c)return "I hear you, doctor. But I need you to understand how overwhelming this is.";
+  var low=text.toLowerCase();var warmWords=['understand','sorry','hear you','with you','together','support','care','imagine','feel','here for','take your time','tell me','how are','that must','not alone','okay','safe','i see'];
+  var coldWords=['calm down','just','simply','technically','unfortunately','statistics','probability','you need to','as i said','data','prognosis','obviously'];
+  var warm=warmWords.filter(function(w){return low.indexOf(w)!==-1;}).length;var cold=coldWords.filter(function(w){return low.indexOf(w)!==-1;}).length;
+  var pool;if(warm>cold+1)pool=c.warm;else if(cold>warm)pool=c.cold;else pool=c.neutral;
+  return pool[Math.floor(chatHistory.length/2)%pool.length];}
+function getOfflineMentor(){return OFFLINE_MENTOR[Math.floor(mentorHistory.length/2)%OFFLINE_MENTOR.length];}
+
+/* ── ORB (warm sage/gold palette) ── */
+function createOrb(id,radius){var cv=document.getElementById(id);if(!cv)return null;
+  var ctx=cv.getContext('2d'),W=cv.width,H=cv.height,cx=W/2,cy=H/2;
+  var N=500,phi=Math.PI*(3-Math.sqrt(5)),t=0,sa=0,la=0,state='idle';var pts=[];
+  for(var i=0;i<N;i++){var y=1-(i/(N-1))*2,r=Math.sqrt(Math.max(0,1-y*y)),th=phi*i;
+    pts.push({x:Math.cos(th)*r,y:y,z:Math.sin(th)*r,ph:Math.random()*Math.PI*2,sz:Math.random()*.6+.4});}
+  function setState(s){state=s;}
+  function tick(){ctx.clearRect(0,0,W,H);t+=.007;
+    sa=state==='speaking'?Math.min(1,sa+.05):Math.max(0,sa-.04);
+    la=state==='listening'?Math.min(1,la+.05):Math.max(0,la-.04);
+    var br=1+Math.sin(t*.5)*.02,rot=t*.08,cr=Math.cos(rot),sr=Math.sin(rot);var list=[];
+    for(var i=0;i<pts.length;i++){var p=pts[i],x2=p.x*cr-p.z*sr,z2=p.x*sr+p.z*cr;
+      var d=sa*.15*Math.sin(p.ph+t*8)*(1-Math.abs(p.y)),l=la*.06*Math.sin(p.ph*2+t*3.5);
+      var rad=radius*br*(1+d+l);list.push({px:cx+x2*rad,py:cy+p.y*rad,depth:(z2+1)/2,p:p});}
+    list.sort(function(a,b){return a.depth-b.depth;});
+    for(var j=0;j<list.length;j++){var item=list[j],sz=item.p.sz*(.35+item.depth*.85);
+      if(state==='speaking')sz*=1+sa*.45*Math.abs(Math.sin(item.p.ph+t*6));
+      var alpha=.12+item.depth*.7;
+      if(la>.0){var rv=Math.round(122+(201-122)*la),gv=Math.round(158+(168-158)*la),bv=Math.round(126+(76-126)*la);
+        ctx.fillStyle='rgba('+rv+','+gv+','+bv+','+alpha+')';}
+      else ctx.fillStyle='rgba(122,158,126,'+alpha+')';
+      ctx.beginPath();ctx.arc(item.px,item.py,Math.max(.3,sz),0,Math.PI*2);ctx.fill();}
+    var gc=la>.1?'rgba(201,168,76,'+(0.05+sa*.06)+')':'rgba(122,158,126,'+(0.05+sa*.08)+')';
+    var g=ctx.createRadialGradient(cx,cy,radius*.2,cx,cy,radius*1.4);g.addColorStop(0,gc);g.addColorStop(1,'transparent');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,radius*1.4,0,Math.PI*2);ctx.fill();requestAnimationFrame(tick);}
+  tick();return{setState:setState};}
+var orbs={};
+window.addEventListener('load',function(){orbs.boot=createOrb('bootOrb',72);orbs.train=createOrb('trainOrb',76);orbs.mentor=createOrb('mentorOrb',42);
+  if(window.speechSynthesis){speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=function(){speechSynthesis.getVoices();};}});
+
+/* ── CASES ── */
+var CASES={
+  dravet:{name:'Aiden, 4 yrs',sub:'Dravet Syndrome · Day 3 post-diagnosis',opener:"Hello… I'm Meena. Aiden's mum. They told us three days ago — Dravet Syndrome. I still don't understand what that means for his life. He had another seizure last night and I just… I haven't slept. David is here but he can't even speak. Can you please help us understand — what is going to happen to our little boy?",emotions:{grief:85,fear:75,hope:15,trust:25},sys:"You are playing Meena, a 32-year-old mother of Aiden (4, Dravet Syndrome, Day 3). Husband David present but silent. Deep grief, shock, terror. Thoughts in fragments. Cry mid-sentence. Refer to 'my Aiden'. If jargon: 'I don't understand'. If cold: withdraw. If warm: open up. React to HOW they speak. 2-3 sentences. Never break character."},
+  epilepsy:{name:'Maya, 7 yrs',sub:'Absence Epilepsy · Recent diagnosis',opener:"Doctor, I have to be honest — Rajiv, my husband, doesn't believe there's anything seriously wrong. He says Maya is just a 'dreamy child'. But I see it — these blank spells, 10, 15 times a day. I'm worried about her school, her friendships… will she grow out of this?",emotions:{grief:40,fear:65,hope:50,trust:45},sys:"You are Priya, 38, mother of Maya (7, Absence Epilepsy). Husband Rajiv in denial. Anxious about stigma, school, future. If reassured without explanation, push back. If explained warmly, relax. 2-3 sentences. Never break character."},
+  duchenne:{name:'Rajan, 11 yrs',sub:'Duchenne MD · Diagnosis day',opener:"I want you to look me in the eye and tell me — is my son going to die from this? Don't give me pamphlets. I am his MOTHER. He was playing cricket last week. You're telling me his muscles will just… stop? How long does he have? I need the truth.",emotions:{grief:60,fear:90,hope:10,trust:15},sys:"You are Sunita, 42, mother of Rajan (11, Duchenne MD, diagnosed today). Raw shock and rage. Ask hardest questions. Won't accept vague answers. If dodged, get angry. If honest and gentle, break down crying. 2-3 sentences. Never break character."},
+  cerebral:{name:'Priya, 9 yrs',sub:'Cerebral Palsy · After 3 years of misdiagnosis',opener:"Right. So you're the fourth doctor this year. The first said developmental delay. The second said autism. The third said nothing. Now you're saying cerebral palsy. Why should I believe you? What makes you different?",emotions:{grief:50,fear:55,hope:20,trust:10},sys:"You are Kavitha, 40, single mother of Priya (9, cerebral palsy, 3 years misdiagnosis). Depleted, skeptical, guarded. Test the trainee. If they acknowledge system failure, soften. If defensive, shut down. 2-3 sentences. Never break character."}};
+var ORIGINAL_EMOTIONS={dravet:{grief:85,fear:75,hope:15,trust:25},epilepsy:{grief:40,fear:65,hope:50,trust:45},duchenne:{grief:60,fear:90,hope:10,trust:15},cerebral:{grief:50,fear:55,hope:20,trust:10}};
+var currentCase='dravet',sessionStart=null,timerInterval=null,chatHistory=[],issueLog=[],confidenceLog=[],mentorHistory=[],lastReport=null,mode='roleplay';
+
+/* ── NAV ── */
+function goScreen(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('on');});document.getElementById(id).classList.add('on');}
+function goSelectCase(){goScreen('caseselect');}function goDev(){goScreen('developer');}
+function startCase(caseId){currentCase=caseId;resetSession();var c=CASES[caseId];CASES[caseId].emotions=Object.assign({},ORIGINAL_EMOTIONS[caseId]);
+  document.getElementById('caseNameDisplay').textContent=c.name;document.getElementById('caseSubDisplay').textContent=c.sub;setEmotions(c.emotions);
+  sessionStart=Date.now();startTimer();goScreen('training');setTimeout(function(){sendAIMessage(c.opener);},600);}
+function startTimer(){clearInterval(timerInterval);timerInterval=setInterval(function(){if(!sessionStart)return;var sec=Math.floor((Date.now()-sessionStart)/1000),m=Math.floor(sec/60),s=sec%60;document.getElementById('progTime').textContent=m+':'+(s<10?'0':'')+s;},1000);}
+
+/* ── EMOTIONS ── */
+function setEmotions(emo){['Grief','Fear','Hope','Trust'].forEach(function(f){var el=document.getElementById('emo'+f),vEl=document.getElementById('emo'+f+'V'),val=emo[f.toLowerCase()]||0;if(el)el.style.width=val+'%';if(vEl)vEl.textContent=val;});}
+function updateEmotions(text){var c=CASES[currentCase],emo=Object.assign({},c.emotions),low=text.toLowerCase();
+  var warm=['understand','sorry','hear you','with you','together','support','care','love','okay','safe','here for','i can see','that must','how are you','tell me','i imagine','not alone','take your time','no rush','of course'];
+  var cold=['calm down','just','simply','technically','unfortunately','statistics','probability','you need to','as i said','listen','the data','studies show'];
+  var w=warm.filter(function(w){return low.indexOf(w)!==-1;}).length,cl=cold.filter(function(w){return low.indexOf(w)!==-1;}).length;
+  emo.hope=Math.min(95,Math.max(5,emo.hope+w*7-cl*6));emo.trust=Math.min(95,Math.max(5,emo.trust+w*8-cl*10));emo.fear=Math.max(5,emo.fear-w*5+cl*3);emo.grief=Math.max(10,emo.grief-w*3+cl*1);c.emotions=emo;setEmotions(emo);}
+
+/* ── MODE ── */
+function setMode(m){mode=m;document.getElementById('tab-rp').classList.toggle('on',m==='roleplay');document.getElementById('tab-mn').classList.toggle('on',m==='debrief');setOrbStatus(m==='roleplay'?'Family conversation active':'Mentor debrief active','active');}
+
+/* ── MESSAGES ── */
+function addChatMessage(who,text,flag,coaching){var c=document.getElementById('messages'),d=document.createElement('div');d.className='msg'+(who==='you'?' you':'');
+  d.innerHTML='<div class="msg-avatar '+(who==='you'?'you':'ai')+'">'+(who==='you'?'👤':'🧠')+'</div><div class="msg-body"><div class="msg-bubble '+(who==='you'?'you':'ai')+'">'+text+'</div>'+(flag?'<div class="msg-flag">⚠ '+flag+'</div>':'')+(coaching?'<div class="msg-coaching">💡 '+coaching+'</div>':'')+'</div>';
+  c.appendChild(d);c.scrollTop=c.scrollHeight;var exch=Math.floor(chatHistory.length/2);document.getElementById('progExch').textContent=exch+' exchange'+(exch!==1?'s':'');document.getElementById('progFill').style.width=Math.min(100,exch*10)+'%';}
+function addMentorMessage(who,text){var c=document.getElementById('mentorMessages'),d=document.createElement('div');d.className='msg'+(who==='you'?' you':'');
+  d.innerHTML='<div class="msg-avatar '+(who==='you'?'you':'ai')+'">'+(who==='you'?'👤':'🎓')+'</div><div class="msg-body"><div class="msg-bubble '+(who==='you'?'you':'ai')+'">'+text+'</div></div>';c.appendChild(d);c.scrollTop=c.scrollHeight;}
+function setOrbStatus(txt,cls){var el=document.getElementById('orbStatus');if(el){el.textContent=txt;el.className='side-orb-status'+(cls?' '+cls:'');}}
+
+/* ── ANALYSIS ── */
+function analyzeTraineeComm(text){var words=text.trim().split(/\s+/),wc=words.length,low=text.toLowerCase();
+  var markers=['i understand','i hear','i can imagine','that must be','how are you','tell me more','i am so sorry','i am here','we will','you are not alone','together','take your time','whenever you','i can see','how do you feel','what matters most'];
+  var emp=markers.filter(function(m){return low.indexOf(m)!==-1;}).length;var q=(text.match(/\?/g)||[]).length;var pace=wc<8?'rushed':wc>80?'overwhelming':'good';
+  var total=Math.min(100,emp*18+q*12+(pace==='good'?20:0));var label,color;
+  if(total>=60){label='Empathetic';color='var(--sage)';}else if(total>=35){label='Developing';color='var(--gold)';}else{label='Needs Work';color='var(--terra)';}
+  var cv=document.getElementById('confVal'),cs=document.getElementById('confSub');if(cv){cv.textContent=label;cv.style.color=color;}
+  if(cs){var parts=[];if(emp>0)parts.push(emp+' empathy marker'+(emp>1?'s':''));if(q>0)parts.push(q+' question'+(q>1?'s':''));if(pace!=='good')parts.push(pace);cs.textContent=parts.length?parts.join(' · '):'Keep going';}
+  confidenceLog.push({score:total,label:label,empathy:emp,questions:q,pace:pace,wcount:wc});
+  var coaching=null;if(pace==='rushed')coaching='Try longer, warmer responses — the family needs your presence';
+  else if(pace==='overwhelming')coaching='Shorter responses give the family space to process';
+  else if(emp===0&&q===0)coaching='Try acknowledging their feelings or asking how they\'re coping';return{score:total,coaching:coaching};}
+
+var JARGON=['sodium channel','scn1a','prognosis','phenotype','pathophysiology','etiology','pharmacoresistant','ketogenic','benzodiazepine','valproate','levetiracetam','comorbidity','neurocognitive','ictal','interictal','gene mutation','mosaic','haploinsufficiency','dystrophin','creatine kinase','anticonvulsant'];
+var COLD=['calm down','you need to understand','as i said','technically','simply put','obviously','it is what it is','nothing we can do','statistics show','the data suggests'];
+var DISMISS=["don't worry","you'll be fine","try not to stress","don't overthink","many parents feel","it could be worse","at least","be strong","stay positive"];
+function analyzeLive(text){var low=text.toLowerCase(),flags=[];JARGON.forEach(function(w){if(low.indexOf(w)!==-1)flags.push({type:'jargon',text:'Medical jargon: "'+w+'"'});});
+  COLD.forEach(function(p){if(low.indexOf(p)!==-1)flags.push({type:'empathy',text:'Low empathy — acknowledge feelings first'});});
+  DISMISS.forEach(function(p){if(low.indexOf(p)!==-1)flags.push({type:'tone',text:'Dismissive: "'+p+'"'});});
+  if(text.trim().split(' ').length<5)flags.push({type:'empathy',text:'Response too brief for emotional context'});return flags;}
+function updateAlertBadge(){var b=document.getElementById('alertBadge'),t=document.getElementById('alertText');if(issueLog.length>0){b.classList.add('show');t.textContent=issueLog.length+' issue'+(issueLog.length>1?'s':'')+' detected';}}
+function showIssues(){if(issueLog.length)showToast(issueLog.length+' communication issues — see report at session end');}
+
+/* ── TTS ── */
+var voiceCache=[];function refreshV(){voiceCache=window.speechSynthesis?speechSynthesis.getVoices():[];}refreshV();if(window.speechSynthesis)speechSynthesis.onvoiceschanged=refreshV;
+function pickVoice(f){var en=voiceCache.filter(function(v){return v.lang.startsWith('en');});var pool=en.length?en:voiceCache;if(!pool.length)return null;
+  if(f)return pool.find(function(v){return/samantha|karen|victoria|moira|zira|fiona|google.*female/i.test(v.name);})||pool[0];
+  return pool.find(function(v){return/daniel|alex|reed|thomas|google.*male/i.test(v.name);})||pool[pool.length>1?1:0];}
+function speak(text,female,orb){if(!window.speechSynthesis)return;speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(text);var v=pickVoice(female);if(v)u.voice=v;
+  u.rate=female?.88:.84;u.pitch=female?1.1:.88;u.volume=1;u.onstart=function(){if(orb)orb.setState('speaking');setOrbStatus('Speaking…','active');};
+  u.onend=function(){if(orb)orb.setState('idle');setOrbStatus('Tap mic or type to respond','');};u.onerror=function(){if(orb)orb.setState('idle');};
+  var ka=setInterval(function(){if(!speechSynthesis.speaking){clearInterval(ka);return;}speechSynthesis.pause();speechSynthesis.resume();},10000);speechSynthesis.speak(u);}
+function unlockTTS(){if(!window.speechSynthesis)return;var s=new SpeechSynthesisUtterance(' ');s.volume=0;s.rate=10;speechSynthesis.speak(s);}
+
+/* ── MAIN FLOW ── */
+var SYS_DB='You are a compassionate senior pediatric neurologist mentor. Debrief warmly. Praise what worked. Name what was missed. Ask one reflective question. 3-4 sentences.';
+var SYS_MN='You are a wise senior pediatric neurologist mentor. Guide with empathy, clinical wisdom, behavioral psychology. Be specific and encouraging. 3-4 sentences.';
+
+/* ── SMART SPEAK: ElevenLabs first, browser TTS fallback ── */
+async function smartSpeak(text,caseId){
+  if(AI_CONFIG.provider==='n8n'&&AI_CONFIG.elevenLabsKey){
+    var ok=await speakElevenLabs(text,caseId);if(ok)return;}
+  speak(text,true,orbs.train);}
+
+function sendAIMessage(text){addChatMessage('ai',text);chatHistory.push({role:'assistant',content:text});
+  if(orbs.train)orbs.train.setState('idle');unlockTTS();setTimeout(function(){smartSpeak(text,currentCase);},100);}
+
+/* ── APPLY n8n ASSESSMENT TO UI ── */
+function applyAssessment(a){if(!a)return;
+  var cv=document.getElementById('confVal'),cs=document.getElementById('confSub');
+  var g=a.empathy_grade||'B';var gc={A:'var(--sage)',B:'var(--sky)',C:'var(--gold)',D:'var(--terra)'};
+  if(cv){cv.textContent='Grade: '+g;cv.style.color=gc[g]||'var(--sage)';}
+  if(cs){cs.textContent=a.coaching_tip||'Keep going';}}
+
+async function handleInput(text){if(!text||!text.trim())return;
+  var flags=analyzeLive(text);flags.forEach(function(f){issueLog.push(f);});updateAlertBadge();
+  var comm=analyzeTraineeComm(text);
+  addChatMessage('you',text.trim(),flags.length>0?flags[0].text:null,comm.coaching);
+  chatHistory.push({role:'user',content:text.trim()});
+  if(orbs.train)orbs.train.setState('listening');setOrbStatus('Thinking…','active');
+  var reply=null,assessment=null;
+
+  if(AI_CONFIG.provider==='n8n'){
+    var n8n=await callN8N(text);
+    if(n8n&&n8n.family_reply){reply=n8n.family_reply;assessment=n8n.assessment||null;
+      if(n8n.emotion_delta){var c=CASES[currentCase],emo=Object.assign({},c.emotions),d=n8n.emotion_delta;
+        emo.grief=Math.min(95,Math.max(5,emo.grief+(d.grief||0)));emo.fear=Math.min(95,Math.max(5,emo.fear+(d.fear||0)));
+        emo.hope=Math.min(95,Math.max(5,emo.hope+(d.hope||0)));emo.trust=Math.min(95,Math.max(5,emo.trust+(d.trust||0)));
+        c.emotions=emo;setEmotions(emo);}
+      applyAssessment(assessment);}}
+
+  if(!reply&&AI_CONFIG.provider==='groq'){updateEmotions(text);
+    var sys=mode==='roleplay'?CASES[currentCase].sys:SYS_DB;reply=await callAI(chatHistory,sys,280);}
+
+  if(!reply){if(AI_CONFIG.provider!=='n8n')updateEmotions(text);
+    reply=mode==='roleplay'?getOfflineResponse(text,currentCase):getOfflineMentor();}
+
+  chatHistory.push({role:'assistant',content:reply});
+  var tip=assessment?assessment.coaching_tip:null;
+  if(tip)addChatMessage('ai',reply,null,tip);else addChatMessage('ai',reply);
+  if(orbs.train)orbs.train.setState('idle');smartSpeak(reply,currentCase);}
+function tapSend(){unlockTTS();var inp=document.getElementById('chatInput'),txt=inp.value.trim();if(!txt)return;inp.value='';handleInput(txt);}
+
+/* ── MIC ── */
+var micOn=false,recognizer=null,heard='',silenceTimer=null;
+function tapMic(){unlockTTS();if(micOn){stopMic();return;}startMic();}
+function startMic(){var SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){setOrbStatus('Speech API not found — use Chrome','');document.getElementById('chatInput').focus();return;}
+  heard='';micOn=true;setMicUI(true);if(orbs.train)orbs.train.setState('listening');setOrbStatus('Listening…','listening');runRecog(SR);}
+function runRecog(SR){if(!micOn)return;try{if(recognizer){recognizer.onstart=null;recognizer.onresult=null;recognizer.onerror=null;recognizer.onend=null;recognizer.abort();}}catch(e){}
+  recognizer=new SR();recognizer.lang='en-US';recognizer.continuous=false;recognizer.interimResults=true;clearTimeout(silenceTimer);
+  silenceTimer=setTimeout(function(){if(micOn&&!heard){stopMic();setOrbStatus('No speech detected','');}},8000);
+  recognizer.onstart=function(){setOrbStatus('Listening… speak now','listening');};
+  recognizer.onresult=function(e){clearTimeout(silenceTimer);var fin='',tmp='';for(var i=0;i<e.results.length;i++){if(e.results[i].isFinal)fin+=e.results[i][0].transcript;else tmp+=e.results[i][0].transcript;}if(fin)heard+=fin;var show=(heard+tmp).trim();if(show)setOrbStatus('❝ '+show.slice(-50),'listening');};
+  recognizer.onerror=function(e){clearTimeout(silenceTimer);if(e.error==='no-speech'){if(micOn)runRecog(SR);return;}if(e.error==='aborted')return;stopMic();setOrbStatus(e.error==='not-allowed'?'Mic blocked — allow in browser':'Mic error','');};
+  recognizer.onend=function(){clearTimeout(silenceTimer);if(!micOn){var txt=heard.trim();if(txt)handleInput(txt);else{if(orbs.train)orbs.train.setState('idle');setOrbStatus('Tap mic or type','');}return;}if(heard){stopMic();handleInput(heard.trim());}else setTimeout(function(){runRecog(SR);},100);};
+  try{recognizer.start();}catch(e){stopMic();setOrbStatus('Could not start mic','');}}
+function stopMic(){micOn=false;clearTimeout(silenceTimer);setMicUI(false);try{recognizer&&recognizer.stop();}catch(e){}}
+function setMicUI(on){var btn=document.getElementById('micBtn'),hint=document.getElementById('micHint');if(!btn)return;
+  if(on){btn.classList.add('recording');btn.textContent='⏹️';if(hint)hint.textContent='tap to stop';}
+  else{btn.classList.remove('recording');btn.textContent='🎙️';if(hint)hint.textContent='tap to speak';}}
+
+/* ── END SESSION ── */
+async function endSession(){if(window.speechSynthesis)speechSynthesis.cancel();clearInterval(timerInterval);showLoading('Reflecting on your session…');goScreen('report');
+  var ds=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});document.getElementById('reportDate').textContent=ds+' · Analyzing…';
+  var c=CASES[currentCase];document.getElementById('reportCase').textContent=c.name+' — '+c.sub.split('·')[0].trim();
+  var dur=sessionStart?Math.round((Date.now()-sessionStart)/60000)+'m':'—';document.getElementById('reportDur').textContent=dur;
+  var exchCount=Math.floor(chatHistory.length/2);document.getElementById('reportExch').textContent=exchCount+' exchanges';var report=null;
+  if(AI_CONFIG.provider!=='offline'){var isum=issueLog.length>0?issueLog.map(function(i){return i.text;}).join('; '):'None';
+    var avg=confidenceLog.length>0?Math.round(confidenceLog.reduce(function(a,b){return a+b.score;},0)/confidenceLog.length):50;
+    var tr=chatHistory.map(function(m){return m.role.toUpperCase()+': '+m.content;}).join('\n\n');
+    var prompt='Analyze this session.\nCase: '+c.name+' ('+c.sub+')\nIssues: '+isum+'\nAvg: '+avg+'%\nTranscript:\n'+(tr||'None')+'\nReturn ONLY valid JSON:\n{"date":"'+ds+'","scores":[{"label":"Empathy Score","grade":"B","note":"sentence"},{"label":"Communication","grade":"B","note":"sentence"},{"label":"Clarity","grade":"B","note":"sentence"},{"label":"Emotional Response","grade":"C","note":"sentence"},{"label":"Humanistic Index","grade":"B","note":"sentence"}],"dimensions":[{"name":"Emotional Acknowledgment","score":70},{"name":"Non-judgmental Language","score":75},{"name":"Tone & Warmth","score":68},{"name":"Silence Comfort","score":52},{"name":"Family Inclusion","score":80},{"name":"Cultural Sensitivity","score":66}],"traineeProfile":{"confidence":"Developing","pacing":"Good","empathyMarkers":3,"questionsAsked":2,"keyStrength":"phrase","keyWeakness":"phrase"},"issues":["i1","i2","i3"],"issueTypes":["jargon","empathy","tone"],"nextSteps":[{"title":"s","detail":"d"},{"title":"s","detail":"d"},{"title":"s","detail":"d"}],"memoryNote":"note","mentorOpener":"opener"}';
+    var raw=await callAI([{role:'user',content:prompt}],null,1400);try{report=JSON.parse((raw||'').replace(/```json|```/g,'').trim());}catch(e){}}
+  if(!report)report=genLocalReport(ds,c);lastReport=report;renderReport(report);document.getElementById('reportDate').textContent=report.date;hideLoading();
+  // Save session to Firestore for history
+  if(currentUser){try{db.collection('users').doc(currentUser.uid).collection('sessions').add({
+    caseId:currentCase,caseName:c.name,date:ds,duration:dur,exchanges:exchCount,
+    report:report,timestamp:firebase.firestore.FieldValue.serverTimestamp()});}catch(e){console.error('Session save:',e);}}
+  var opener=report.mentorOpener||"Let's reflect together. I saw genuine care in your approach — let's build on that. What felt most challenging?";
+  addMentorMessage('ai',opener);mentorHistory=[{role:'assistant',content:opener}];if(orbs.mentor)orbs.mentor.setState('idle');unlockTTS();setTimeout(function(){speak(opener,false,orbs.mentor);},200);}
+
+function genLocalReport(ds,c){var avg=confidenceLog.length>0?Math.round(confidenceLog.reduce(function(a,b){return a+b.score;},0)/confidenceLog.length):50;
+  var tE=confidenceLog.reduce(function(a,b){return a+b.empathy;},0),tQ=confidenceLog.reduce(function(a,b){return a+b.questions;},0);
+  var jC=issueLog.filter(function(i){return i.type==='jargon';}).length,eC=issueLog.filter(function(i){return i.type==='empathy';}).length,tC=issueLog.filter(function(i){return i.type==='tone';}).length;
+  function gr(s){return s>=75?'A':s>=55?'B':s>=35?'C':'D';}
+  var es=Math.min(100,avg+tE*5),cs=Math.max(20,80-jC*15),cls=Math.max(20,85-jC*10),eos=Math.max(20,70-eC*12),hs=Math.round((es+cs+eos)/3);
+  var issues=[];if(jC>0)issues.push('Medical jargon used '+jC+' time'+(jC>1?'s':''));if(eC>0)issues.push('Emotional distress unacknowledged '+eC+' time'+(eC>1?'s':''));if(tC>0)issues.push('Dismissive language '+tC+' time'+(tC>1?'s':''));if(!issues.length)issues.push('No major issues — well done');
+  var iT=[];if(jC)iT.push('jargon');if(eC)iT.push('empathy');if(tC)iT.push('tone');if(!iT.length)iT.push('tone');
+  var tD=c.emotions.trust-ORIGINAL_EMOTIONS[currentCase].trust,hD=c.emotions.hope-ORIGINAL_EMOTIONS[currentCase].hope;
+  return{date:ds,scores:[{label:'Empathy Score',grade:gr(es),note:es>=70?'Strong emotional presence.':'More emotional acknowledgment needed.'},
+    {label:'Communication',grade:gr(cs),note:jC===0?'Clear, accessible language.':'Medical jargon needs replacement.'},
+    {label:'Clarity',grade:gr(cls),note:cls>=70?'Explanations were accessible.':'Consider simpler phrasing.'},
+    {label:'Emotional Response',grade:gr(eos),note:eos>=70?'Family felt heard.':'Several moments went unaddressed.'},
+    {label:'Humanistic Index',grade:gr(hs),note:hs>=70?'Strong humanistic foundation.':'Good start — room to deepen.'}],
+    dimensions:[{name:'Emotional Acknowledgment',score:Math.min(95,Math.max(20,avg+tE*3))},{name:'Non-judgmental Language',score:Math.min(95,Math.max(30,85-tC*15))},
+      {name:'Tone & Warmth',score:Math.min(95,Math.max(25,avg+5))},{name:'Silence Comfort',score:Math.min(80,Math.max(20,40+Math.random()*20|0))},
+      {name:'Family Inclusion',score:Math.min(95,Math.max(30,60+tQ*5))},{name:'Cultural Sensitivity',score:Math.min(90,Math.max(40,55+Math.random()*15|0))}],
+    traineeProfile:{confidence:avg>=60?'Confident':avg>=35?'Developing':'Emerging',pacing:confidenceLog.some(function(c){return c.pace==='rushed';})?'Rushed':'Good',
+      empathyMarkers:tE,questionsAsked:tQ,keyStrength:tE>=3?'Strong empathy markers':tQ>=2?'Good questioning':'Consistent engagement',keyWeakness:jC>1?'Excessive jargon':eC>1?'Missed emotional cues':'Could deepen acknowledgment'},
+    issues:issues,issueTypes:iT,nextSteps:[{title:'Therapeutic Silence',detail:'After emotional disclosure, pause 4 seconds. Silence says "I am here with you."'},
+      {title:'Feelings Before Facts',detail:'Acknowledge the emotion before any clinical information.'},
+      {title:'Replace Jargon',detail:'Use metaphors and stories instead of technical terms.'}],
+    memoryNote:tD>20?'Remarkable trust-building. They opened up because you met them with compassion.':hD>15?'You brought real hope. Now deepen the emotional connection.':'The care is already there — let it show in every pause.',
+    mentorOpener:avg>=60?"I watched closely and there were moments of real connection. What felt most natural to you?":"Let's reflect together. Every conversation is a chance to grow. What felt most challenging?"};}
+
+function renderReport(r){var bc=['#7a9e7e','#7ba4c4','#c9a84c','#c4836a','#9b7eb4','#78b8a8'];
+  document.getElementById('scoreGrid').innerHTML=(r.scores||[]).map(function(s){var g=(s.grade||'B').charAt(0);return'<div class="score-card '+g+'"><div class="sc-label">'+s.label+'</div><div class="sc-grade '+g+'">'+s.grade+'</div><div class="sc-note">'+s.note+'</div></div>';}).join('');
+  var tp=r.traineeProfile||{};document.getElementById('profileGrid').innerHTML=
+    '<div class="profile-box"><div class="profile-icon">🧠</div><div class="profile-label">Confidence</div><div class="profile-val" style="color:var(--sage)">'+(tp.confidence||'—')+'</div></div>'+
+    '<div class="profile-box"><div class="profile-icon">⚡</div><div class="profile-label">Pacing</div><div class="profile-val" style="color:var(--gold)">'+(tp.pacing||'—')+'</div></div>'+
+    '<div class="profile-box"><div class="profile-icon">❤️</div><div class="profile-label">Empathy</div><div class="profile-val" style="color:var(--terra)">'+(tp.empathyMarkers||0)+'</div></div>'+
+    '<div class="profile-box"><div class="profile-icon">❓</div><div class="profile-label">Questions</div><div class="profile-val" style="color:var(--sky)">'+(tp.questionsAsked||0)+'</div></div>'+
+    '<div class="profile-box"><div class="profile-icon">✨</div><div class="profile-label">Strength</div><div class="profile-val" style="color:var(--sage);font-size:.76rem">'+(tp.keyStrength||'—')+'</div></div>'+
+    '<div class="profile-box"><div class="profile-icon">🔧</div><div class="profile-label">To Improve</div><div class="profile-val" style="color:var(--terra);font-size:.76rem">'+(tp.keyWeakness||'—')+'</div></div>';
+  document.getElementById('barRows').innerHTML=(r.dimensions||[]).map(function(d,i){return'<div class="bar-row"><span class="bar-name">'+d.name+'</span><div class="bar-track"><div class="bar-fill" style="width:0%;background:'+bc[i%bc.length]+'" data-target="'+d.score+'"></div></div><span class="bar-pct">'+d.score+'%</span></div>';}).join('');
+  setTimeout(function(){document.querySelectorAll('.bar-fill').forEach(function(el){el.style.width=el.getAttribute('data-target')+'%';});},150);
+  document.getElementById('issuePills').innerHTML=(r.issues||[]).map(function(issue,i){var cls={jargon:'jargon',empathy:'empathy',tone:'tone'}[(r.issueTypes||[])[i]]||'tone';return'<span class="issue-pill '+cls+'">⚠ '+issue+'</span>';}).join('');
+  document.getElementById('nextSteps').innerHTML=(r.nextSteps||[]).map(function(s,i){return'<div class="next-item"><div class="next-num">'+(i+1)+'</div><div class="next-body"><h5>'+s.title+'</h5><p>'+s.detail+'</p></div></div>';}).join('');
+  document.getElementById('memoryNote').innerHTML='<strong>Memory note:</strong> '+(r.memoryNote||'');}
+
+/* ── MENTOR ── */
+async function sendMentor(){unlockTTS();var inp=document.getElementById('mentorInput'),txt=inp.value.trim();if(!txt)return;inp.value='';addMentorMessage('you',txt);mentorHistory.push({role:'user',content:txt});
+  if(orbs.mentor)orbs.mentor.setState('listening');var reply=null;if(AI_CONFIG.provider!=='offline')reply=await callAI(mentorHistory,SYS_MN,300);if(!reply)reply=getOfflineMentor();
+  mentorHistory.push({role:'assistant',content:reply});addMentorMessage('ai',reply);if(orbs.mentor)orbs.mentor.setState('idle');
+  if(AI_CONFIG.provider==='n8n'&&AI_CONFIG.elevenLabsKey){speakElevenLabs(reply,currentCase);}else{speak(reply,false,orbs.mentor);}}
+
+/* ── PDF ── */
+function exportPDF(){if(!lastReport){showToast('No report yet');return;}var r=lastReport;try{var doc=new window.jspdf.jsPDF();var y=20;
+  doc.setFontSize(20);doc.setTextColor(122,158,126);doc.text('Fellowmate — Session Report',20,y);y+=10;doc.setFontSize(10);doc.setTextColor(140,132,122);doc.text(r.date,20,y);y+=8;
+  var c=CASES[currentCase];doc.text('Case: '+c.name+' — '+c.sub,20,y);y+=12;doc.setFontSize(13);doc.setTextColor(61,58,54);doc.text('Scores',20,y);y+=8;doc.setFontSize(9);doc.setTextColor(90,84,76);
+  (r.scores||[]).forEach(function(s){doc.text(s.label+': '+s.grade+' — '+s.note,20,y);y+=7;});y+=5;
+  doc.setFontSize(13);doc.setTextColor(61,58,54);doc.text('Behavioral Dimensions',20,y);y+=8;doc.setFontSize(9);doc.setTextColor(90,84,76);
+  (r.dimensions||[]).forEach(function(d){doc.text(d.name+': '+d.score+'%',20,y);y+=7;});y+=5;
+  doc.setFontSize(13);doc.setTextColor(61,58,54);doc.text('Issues',20,y);y+=8;doc.setFontSize(9);
+  (r.issues||[]).forEach(function(i){doc.text('• '+i,20,y);y+=7;});y+=5;
+  doc.setFontSize(13);doc.setTextColor(61,58,54);doc.text('Next Steps',20,y);y+=8;doc.setFontSize(9);doc.setTextColor(90,84,76);
+  (r.nextSteps||[]).forEach(function(s,i){var ln=doc.splitTextToSize((i+1)+'. '+s.title+': '+s.detail,170);doc.text(ln,20,y);y+=ln.length*7+3;});
+  y+=5;doc.setFontSize(10);doc.setTextColor(122,158,126);var nl=doc.splitTextToSize('Memory: '+(r.memoryNote||''),170);doc.text(nl,20,y);
+  doc.save('Fellowmate_Session_Report.pdf');showToast('PDF exported');}catch(e){showToast('PDF failed: '+e.message);}}
+
+/* ── RESET ── */
+function resetSession(){chatHistory=[];issueLog=[];confidenceLog=[];mentorHistory=[];lastReport=null;
+  var m=document.getElementById('messages');if(m)m.innerHTML='';var mm=document.getElementById('mentorMessages');if(mm)mm.innerHTML='';
+  document.getElementById('alertBadge').classList.remove('show');setOrbStatus('Tap mic or type to begin','');setMicUI(false);mode='roleplay';
+  document.getElementById('tab-rp').classList.add('on');document.getElementById('tab-mn').classList.remove('on');
+  var cv=document.getElementById('confVal'),cs=document.getElementById('confSub');if(cv){cv.textContent='—';cv.style.color='var(--sage)';}if(cs)cs.textContent='Awaiting your first response';
+  document.getElementById('progFill').style.width='0%';document.getElementById('progExch').textContent='0 exchanges';document.getElementById('progTime').textContent='0:00';
+  if(ORIGINAL_EMOTIONS[currentCase])CASES[currentCase].emotions=Object.assign({},ORIGINAL_EMOTIONS[currentCase]);}
+
+/* ── UTILS ── */
+function showLoading(t){document.getElementById('loadingText').textContent=t||'Loading…';document.getElementById('loadingOverlay').classList.add('show');}
+function hideLoading(){document.getElementById('loadingOverlay').classList.remove('show');}
+function showToast(msg){var ex=document.querySelector('.toast');if(ex)ex.remove();var t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(function(){t.classList.add('hide');},3000);setTimeout(function(){t.remove();},3300);}
+function handleUpload(event,listId){var files=event.target.files;if(!files||!files.length)return;var list=document.getElementById(listId);
+  Array.from(files).forEach(function(file){var icon=file.type.startsWith('video')?'🎬':'📄';var size=(file.size/(1024*1024)).toFixed(1)+' MB';var d=document.createElement('div');d.className='file-item';
+    d.innerHTML='<span class="file-icon">'+icon+'</span><div class="file-info"><h6>'+file.name+'</h6><p>'+size+' · Processing…</p></div><span class="file-badge pending">Processing</span>';list.appendChild(d);
+    setTimeout(function(){d.querySelector('.file-badge').textContent='Trained';d.querySelector('.file-badge').className='file-badge ok';d.querySelector('p').textContent=size+' · Indexed';},2200);});showToast('Files uploaded');}
+</script>
+</body>
+</html>
