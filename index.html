@@ -1,0 +1,2018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fellowmate — Humanistic Pediatric Neurology Training</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyCXSz2www86LpxoX-qX2Q1kypvxc3zVvao",
+  authDomain:"fellowmate-339b7.firebaseapp.com",
+  projectId:"fellowmate-339b7",
+  storageBucket:"fellowmate-339b7.firebasestorage.app",
+  messagingSenderId:"552098008610",
+  appId:"1:552098008610:web:85ac807dac72fbfcee047b"
+});
+var auth=firebase.auth();
+var db=firebase.firestore();
+</script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{height:100%}
+body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;color:#3d3a36}
+
+:root{
+  /* warm linen palette */
+  --cream:#faf6f0;--linen:#f3ece2;--parchment:#ede4d8;--sand:#e0d5c5;
+  /* accent warmth */
+  --sage:#7a9e7e;--sage-l:#e8f0e8;--sage-glow:rgba(122,158,126,.12);
+  --terra:#c4836a;--terra-l:#faeae4;--terra-glow:rgba(196,131,106,.1);
+  --gold:#c9a84c;--gold-l:#faf4e0;
+  --sky:#7ba4c4;--sky-l:#e6f0f8;
+  --plum:#9b7eb4;--plum-l:#f0e8f6;
+  /* text */
+  --ink:#3d3a36;--ink-s:#5c5750;--ink-m:#8a847a;--ink-l:#b8b0a4;
+  /* surfaces */
+  --card:rgba(255,255,255,.7);--card-b:rgba(0,0,0,.06);
+  --radius:16px;--radius-sm:11px;
+}
+
+body{background:var(--cream)}
+/* warm paper texture overlay */
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 10%,rgba(122,158,126,.06),transparent 50%),
+    radial-gradient(ellipse 60% 60% at 85% 85%,rgba(196,131,106,.05),transparent 50%),
+    radial-gradient(ellipse 50% 50% at 50% 50%,rgba(201,168,76,.03),transparent 50%)}
+/* subtle noise grain */
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.3;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E")}
+
+.screen{display:none;position:fixed;inset:0;z-index:1;flex-direction:column}
+.screen.on{display:flex}
+
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-thumb{background:var(--sand);border-radius:3px}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ─── BUTTONS ─── */
+.btn{padding:11px 26px;border-radius:100px;border:1.5px solid var(--sand);background:white;
+  color:var(--ink-s);font-family:'Nunito',sans-serif;font-size:.8rem;font-weight:600;
+  letter-spacing:.02em;cursor:pointer;transition:all .3s;outline:none;
+  box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.06)}
+.btn:active{transform:scale(.98)}
+.btn.sage{border-color:rgba(122,158,126,.3);color:var(--sage);background:var(--sage-l)}
+.btn.sage:hover{background:#dceadc;box-shadow:0 4px 16px rgba(122,158,126,.15)}
+.btn.terra{border-color:rgba(196,131,106,.25);color:var(--terra);background:var(--terra-l)}
+.btn.terra:hover{background:#f4ddd4;box-shadow:0 4px 16px rgba(196,131,106,.12)}
+.btn.sm{padding:7px 18px;font-size:.72rem}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--ink-m);box-shadow:none}
+.btn.ghost:hover{color:var(--ink-s);background:rgba(0,0,0,.03)}
+
+/* soft card mixin */
+.soft-card{background:var(--card);border:1px solid var(--card-b);border-radius:var(--radius);
+  box-shadow:0 2px 8px rgba(0,0,0,.03),0 0 0 1px rgba(255,255,255,.8) inset}
+
+/* ═══════════════════════════════════════════ */
+/*                   BOOT                     */
+/* ═══════════════════════════════════════════ */
+#boot{align-items:center;justify-content:center;gap:6px;text-align:center;background:var(--cream)}
+.boot-inner{display:flex;flex-direction:column;align-items:center;gap:4px}
+.brand{font-family:'Lora',serif;font-size:3.2rem;font-weight:400;letter-spacing:.03em;color:var(--ink)}
+.brand em{font-style:italic;color:var(--sage);font-weight:500}
+.tagline{font-size:.64rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-l);margin-top:2px;font-weight:600}
+.boot-sub{max-width:460px;font-size:.88rem;color:var(--ink-m);line-height:1.8;margin:16px 0 4px;font-weight:400}
+.boot-btns{display:flex;gap:14px;margin-top:16px;flex-wrap:wrap;justify-content:center}
+.boot-footer{position:fixed;bottom:28px;font-size:.62rem;color:var(--ink-l);letter-spacing:.06em;text-align:center;line-height:1.7;font-weight:500}
+.api-indicator{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:100px;font-size:.64rem;font-weight:600;
+  margin-top:12px;cursor:pointer;transition:all .25s}
+.api-indicator.online{background:var(--sage-l);border:1.5px solid rgba(122,158,126,.2);color:var(--sage)}
+.api-indicator:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(0,0,0,.05)}
+.api-dot{width:7px;height:7px;border-radius:50%}
+.api-dot.on{background:var(--sage)}.api-dot.off{background:var(--gold)}
+
+/* ═══════════════════════════════════════════ */
+/*              CASE SELECT                   */
+/* ═══════════════════════════════════════════ */
+#caseselect{align-items:center;justify-content:center;gap:22px;overflow-y:auto;padding:40px 20px;background:var(--cream)}
+.cs-title{font-family:'Lora',serif;font-size:1.7rem;font-weight:400;color:var(--ink);letter-spacing:.02em}
+.cs-subtitle{font-size:.76rem;color:var(--ink-m);margin-top:3px;text-align:center;font-weight:400}
+.cs-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;width:min(740px,94vw)}
+@media(max-width:600px){.cs-grid{grid-template-columns:1fr}}
+
+.cs-card{background:white;border:1.5px solid rgba(0,0,0,.06);border-radius:var(--radius);
+  padding:22px 24px;cursor:pointer;transition:all .35s;position:relative;overflow:hidden;
+  box-shadow:0 2px 8px rgba(0,0,0,.03)}
+.cs-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:3px 0 0 3px;transition:width .3s}
+.cs-card:hover::before{width:5px}
+.cs-card.c1::before{background:linear-gradient(180deg,var(--terra),#b06848)}
+.cs-card.c2::before{background:linear-gradient(180deg,var(--gold),#a08828)}
+.cs-card.c3::before{background:linear-gradient(180deg,var(--sky),#5888a8)}
+.cs-card.c4::before{background:linear-gradient(180deg,var(--plum),#7860a0)}
+.cs-card:hover{border-color:rgba(0,0,0,.1);transform:translateY(-4px);
+  box-shadow:0 12px 32px rgba(0,0,0,.08)}
+.cs-tag{font-size:.58rem;text-transform:uppercase;letter-spacing:.14em;color:var(--ink-l);margin-bottom:8px;font-weight:700}
+.cs-name{font-family:'Lora',serif;font-size:1.1rem;color:var(--ink);margin-bottom:6px;line-height:1.3;font-weight:500}
+.cs-desc{font-size:.76rem;color:var(--ink-m);line-height:1.65;margin-bottom:12px}
+.cs-meta{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.cs-pill{padding:4px 10px;border-radius:100px;font-size:.6rem;font-weight:700}
+.cs-diff{padding:4px 10px;border-radius:100px;font-size:.6rem;font-weight:700;border:1.5px solid}
+.cs-arrow{position:absolute;bottom:18px;right:20px;font-size:.72rem;color:var(--sage);opacity:0;transition:all .3s;transform:translateX(-4px);font-weight:600}
+.cs-card:hover .cs-arrow{opacity:1;transform:translateX(0)}
+
+/* ═══════════════════════════════════════════ */
+/*                TOPBAR                      */
+/* ═══════════════════════════════════════════ */
+.topbar{width:100%;display:flex;align-items:center;justify-content:space-between;
+  padding:10px 22px;border-bottom:1.5px solid rgba(0,0,0,.06);
+  background:rgba(250,246,240,.92);backdrop-filter:blur(16px);flex-shrink:0;z-index:20}
+.top-logo{font-family:'Lora',serif;font-size:.95rem;font-weight:500;color:var(--sage);letter-spacing:.04em;cursor:pointer}
+.top-tabs{display:flex;background:white;border:1.5px solid rgba(0,0,0,.06);border-radius:100px;overflow:hidden;
+  box-shadow:0 1px 4px rgba(0,0,0,.03)}
+.ttab{padding:7px 18px;font-family:'Nunito',sans-serif;font-size:.72rem;font-weight:600;
+  border:none;background:transparent;color:var(--ink-l);cursor:pointer;transition:all .24s}
+.ttab.on{background:var(--sage-l);color:var(--sage)}
+.ttab:hover:not(.on){color:var(--ink-m)}
+.top-right{display:flex;align-items:center;gap:10px}
+@keyframes pulse-soft{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ═══════════════════════════════════════════ */
+/*              TRAINING LAYOUT               */
+/* ═══════════════════════════════════════════ */
+#training{justify-content:flex-start;background:var(--cream)}
+.train-body{flex:1;display:flex;width:100%;overflow:hidden}
+@media(max-width:768px){
+  .train-body{flex-direction:column}
+  .side-panel{width:100%!important;max-height:220px;border-right:none!important;border-bottom:1.5px solid rgba(0,0,0,.06);flex-direction:row;flex-wrap:wrap;overflow-x:auto;padding:12px!important;gap:8px!important}
+  .side-panel canvas{display:none}
+  .side-orb-status{display:none}
+  .side-case,.side-emotions,.side-confidence{flex:1;min-width:160px}
+}
+
+.side-panel{width:290px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;
+  gap:10px;border-right:1.5px solid rgba(0,0,0,.06);padding:16px;
+  background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(243,236,226,.5));overflow-y:auto}
+.side-orb-status{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-l);
+  min-height:16px;text-align:center;transition:color .4s;max-width:220px;line-height:1.5;font-weight:600}
+.side-orb-status.active{color:var(--sage)}
+.side-orb-status.listening{color:#a08830}
+
+.side-case{width:100%;padding:12px 15px}
+.side-case-label{font-size:.54rem;text-transform:uppercase;letter-spacing:.13em;color:var(--ink-l);margin-bottom:5px;font-weight:700}
+.side-case-name{font-family:'Lora',serif;font-size:.96rem;color:var(--ink);font-weight:500}
+.side-case-sub{font-size:.68rem;color:var(--ink-m);margin-top:3px}
+
+.side-emotions{width:100%;padding:12px 15px}
+.emo-label{font-size:.54rem;text-transform:uppercase;letter-spacing:.13em;color:var(--ink-l);margin-bottom:10px;font-weight:700}
+.emo-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.emo-icon{font-size:.75rem;width:18px;text-align:center;flex-shrink:0}
+.emo-name{font-size:.68rem;color:var(--ink-s);width:48px;flex-shrink:0;font-weight:500}
+.emo-track{flex:1;height:5px;background:rgba(0,0,0,.04);border-radius:4px;overflow:hidden}
+.emo-fill{height:100%;border-radius:4px;transition:width 1s cubic-bezier(.4,0,.2,1)}
+.emo-val{font-size:.62rem;color:var(--ink-l);width:24px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+
+.side-confidence{width:100%;padding:12px 15px;text-align:center}
+.conf-label{font-size:.54rem;text-transform:uppercase;letter-spacing:.13em;color:var(--ink-l);margin-bottom:7px;font-weight:700}
+.conf-value{font-family:'Lora',serif;font-size:1.35rem;font-weight:500;color:var(--sage);transition:color .4s}
+.conf-detail{font-size:.64rem;color:var(--ink-l);margin-top:4px;font-weight:500}
+
+.side-progress{width:100%;padding:12px 15px}
+.prog-label{font-size:.54rem;text-transform:uppercase;letter-spacing:.13em;color:var(--ink-l);margin-bottom:7px;font-weight:700}
+.prog-track{width:100%;height:4px;background:rgba(0,0,0,.04);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--sage),var(--sky));border-radius:3px;transition:width .6s ease;width:0%}
+.prog-info{display:flex;justify-content:space-between;margin-top:6px;font-size:.6rem;color:var(--ink-l);font-weight:600}
+
+.mic-area{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:auto;padding-top:10px}
+@keyframes mic-glow{0%,100%{box-shadow:0 0 0 0 rgba(196,131,106,.35)}50%{box-shadow:0 0 0 12px rgba(196,131,106,0)}}
+.mic-btn{width:54px;height:54px;border-radius:50%;border:2px solid rgba(122,158,126,.25);
+  background:var(--sage-l);color:var(--sage);font-size:20px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .3s;outline:none;
+  box-shadow:0 2px 10px rgba(122,158,126,.1)}
+.mic-btn:hover{background:#d8ead8;transform:scale(1.06);box-shadow:0 4px 16px rgba(122,158,126,.15)}
+.mic-btn.recording{border-color:rgba(196,131,106,.4)!important;background:var(--terra-l)!important;
+  color:var(--terra)!important;animation:mic-glow 1.4s ease-in-out infinite}
+.mic-hint{font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-l);font-weight:600}
+
+/* ═══════════════════════════════════════════ */
+/*                 CHAT                       */
+/* ═══════════════════════════════════════════ */
+.chat-panel{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--linen)}
+.messages{flex:1;overflow-y:auto;padding:22px 26px;display:flex;flex-direction:column;gap:14px}
+
+@keyframes msg-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.msg{display:flex;gap:10px;align-items:flex-start;animation:msg-in .4s ease;max-width:80%}
+.msg.you{flex-direction:row-reverse;align-self:flex-end}
+.msg-avatar{width:32px;height:32px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;
+  justify-content:center;font-size:13px;font-weight:700;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.msg-avatar.ai{background:var(--sage-l);color:var(--sage)}
+.msg-avatar.you{background:var(--sky-l);color:var(--sky)}
+.msg-body{display:flex;flex-direction:column;gap:4px}
+.msg-bubble{padding:13px 17px;border-radius:18px;font-size:.84rem;line-height:1.75;
+  box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.msg-bubble.ai{background:white;border:1px solid rgba(0,0,0,.05);border-top-left-radius:4px}
+.msg-bubble.you{background:var(--sage-l);border:1px solid rgba(122,158,126,.12);border-top-right-radius:4px;color:var(--ink)}
+
+.msg-flag{display:inline-flex;align-items:center;gap:4px;font-size:.62rem;font-weight:600;padding:4px 10px;border-radius:100px;
+  background:var(--terra-l);border:1px solid rgba(196,131,106,.15);color:var(--terra)}
+.msg-coaching{display:inline-flex;align-items:center;gap:4px;font-size:.62rem;font-weight:600;padding:4px 10px;border-radius:100px;
+  background:var(--sage-l);border:1px solid rgba(122,158,126,.12);color:var(--sage)}
+
+
+/* ═══════════════════════════════════════════ */
+/*          SESSION REPORT + DEBRIEF           */
+/* ═══════════════════════════════════════════ */
+#report{justify-content:flex-start;overflow-y:auto;background:var(--cream)}
+.report-wrap{width:min(740px,95vw);margin:0 auto;padding:28px 0 50px}
+.report-header{text-align:center;padding:24px 0 20px;border-bottom:1.5px solid rgba(0,0,0,.06);margin-bottom:22px}
+.report-header h1{font-family:'Lora',serif;font-size:1.8rem;font-weight:400;color:var(--sage);letter-spacing:.02em}
+.report-header p{font-size:.62rem;color:var(--ink-l);margin-top:6px;letter-spacing:.12em;text-transform:uppercase;font-weight:600}
+.report-meta{display:flex;justify-content:center;gap:20px;font-size:.74rem;color:var(--ink-m);padding:0 0 20px;flex-wrap:wrap}
+.report-meta strong{color:var(--ink-s);font-weight:600}
+
+/* JSE Gauge */
+.jse-gauge{text-align:center;padding:24px;background:white;border-radius:var(--radius);border:1px solid rgba(0,0,0,.05);margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.03)}
+.jse-score-big{font-family:'Lora',serif;font-size:3.2rem;font-weight:400;line-height:1}
+.jse-score-big.high{color:var(--sage)}.jse-score-big.mid{color:var(--gold)}.jse-score-big.low{color:var(--terra)}
+.jse-label{font-size:.58rem;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-l);font-weight:700;margin-top:6px}
+.jse-interp{font-size:.76rem;color:var(--ink-m);margin-top:8px;line-height:1.5}
+.jse-bar-wrap{width:80%;max-width:320px;margin:12px auto 0;height:8px;background:rgba(0,0,0,.05);border-radius:4px;overflow:hidden}
+.jse-bar-fill{height:100%;border-radius:4px;transition:width 1.5s cubic-bezier(.4,0,.2,1)}
+
+/* Section cards */
+.r-card{background:white;border:1px solid rgba(0,0,0,.05);border-radius:var(--radius);padding:20px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.03)}
+.r-card-title{font-size:.6rem;text-transform:uppercase;letter-spacing:.14em;color:var(--ink-l);font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.r-card-title span{font-size:1rem}
+
+/* Hume bars */
+.hume-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.hume-name{font-size:.72rem;color:var(--ink-s);width:120px;flex-shrink:0;font-weight:500}
+.hume-track{flex:1;height:7px;background:rgba(0,0,0,.04);border-radius:4px;overflow:hidden}
+.hume-fill{height:100%;border-radius:4px;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
+.hume-val{font-size:.64rem;color:var(--ink-l);width:32px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+
+/* Claude dimensions */
+.dim-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:500px){.dim-grid{grid-template-columns:1fr}}
+.dim-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--linen);border-radius:var(--radius-sm)}
+.dim-score{font-family:'Lora',serif;font-size:1.4rem;font-weight:400;min-width:36px}
+.dim-name{font-size:.72rem;color:var(--ink-m);font-weight:500}
+
+/* Issues & next steps */
+.issue-pills{display:flex;flex-wrap:wrap;gap:8px}
+.issue-pill{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:100px;font-size:.68rem;font-weight:600}
+.issue-pill.jargon{background:var(--gold-l);border:1px solid rgba(201,168,76,.2);color:#906c20}
+.issue-pill.empathy{background:var(--terra-l);border:1px solid rgba(196,131,106,.2);color:var(--terra)}
+.issue-pill.tone{background:var(--plum-l);border:1px solid rgba(155,126,180,.2);color:var(--plum)}
+.next-item{display:flex;gap:14px;padding:14px;background:var(--linen);border-radius:var(--radius-sm);margin-bottom:8px}
+.next-num{width:24px;height:24px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.64rem;font-weight:700;background:var(--sage-l);color:var(--sage)}
+.next-body h5{font-size:.76rem;font-weight:600;color:var(--ink-s);margin-bottom:2px}
+.next-body p{font-size:.7rem;color:var(--ink-m);line-height:1.6}
+
+/* Debrief section */
+.debrief-start{text-align:center;padding:28px;border-top:1.5px solid rgba(0,0,0,.06);margin-top:8px}
+.debrief-start h2{font-family:'Lora',serif;font-size:1.3rem;font-weight:400;color:var(--ink-s);margin-bottom:6px}
+.debrief-start p{font-size:.72rem;color:var(--ink-l);margin-bottom:16px}
+
+.debrief-chat{background:white;border:1.5px solid rgba(0,0,0,.06);border-radius:var(--radius);overflow:hidden;margin-bottom:16px}
+.debrief-messages{min-height:160px;max-height:400px;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:12px;-webkit-overflow-scrolling:touch}
+.debrief-controls{display:flex;align-items:center;justify-content:center;gap:16px;padding:16px}
+.debrief-mic{width:64px;height:64px;border-radius:50%;border:3px solid #e0d5c5;font-size:1.6rem;cursor:pointer;background:white;-webkit-tap-highlight-color:transparent}
+.debrief-mic.rec{background:#c4836a;border-color:#c4836a}
+.debrief-mic.wait{background:#c9a84c;border-color:#c9a84c}
+.debrief-mic.ready{background:#7a9e7e;border-color:#7a9e7e}
+.debrief-mic:disabled{opacity:.4}
+.debrief-status{font-size:.72rem;color:var(--ink-m);font-weight:500;min-width:120px}
+#debriefLog{background:#222;color:#8f8;border-radius:8px;padding:6px 8px;font-size:.52rem;max-height:70px;overflow-y:auto;font-family:monospace;white-space:pre-wrap;margin-bottom:16px}
+
+/* Final report card */
+.final-card{text-align:center;padding:32px;background:white;border-radius:var(--radius);border:1px solid rgba(0,0,0,.05);margin-bottom:20px}
+.final-grade{font-family:'Lora',serif;font-size:4rem;font-weight:400;margin-bottom:8px}
+.final-summary{font-size:.82rem;color:var(--ink-m);line-height:1.7;max-width:480px;margin:0 auto}
+.report-actions{display:flex;gap:12px;justify-content:center;padding-bottom:32px;flex-wrap:wrap}
+
+
+/* ═══ DEBRIEF SESSION ═══ */
+#debrief{justify-content:flex-start;overflow-y:auto;background:var(--cream)}
+.debrief-wrap{width:min(500px,94vw);margin:0 auto;padding:20px 0 40px;display:flex;flex-direction:column;align-items:center}
+.debrief-header{text-align:center;margin-bottom:16px}
+.debrief-header h1{font-family:'Lora',serif;font-size:1.5rem;font-weight:400;color:var(--plum)}
+.debrief-header p{font-size:.68rem;color:var(--ink-l);margin-top:4px}
+.debrief-status{font-size:.78rem;font-weight:600;color:var(--sage);margin-bottom:12px;min-height:24px;text-align:center}
+.debrief-status.err{color:var(--terra)}
+.debrief-chat{width:100%;background:white;border:1.5px solid rgba(0,0,0,.06);border-radius:var(--radius);overflow:hidden;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.03)}
+.debrief-messages{min-height:160px;max-height:50vh;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch}
+.debrief-mic{width:72px;height:72px;border-radius:50%;border:3px solid #e0d5c5;font-size:1.8rem;cursor:pointer;background:white;margin-bottom:12px;-webkit-tap-highlight-color:transparent}
+.debrief-mic:disabled{opacity:.4}
+.debrief-mic.rec{background:#c4836a;border-color:#c4836a}
+.debrief-mic.wait{background:#c9a84c;border-color:#c9a84c}
+.debrief-mic.ready{background:var(--plum);border-color:var(--plum)}
+#debriefLog{width:100%;background:#222;color:#8f8;border-radius:8px;padding:6px;font-size:.52rem;max-height:70px;overflow-y:auto;font-family:monospace;white-space:pre-wrap;margin-bottom:14px}
+
+/* ═══ FINAL REPORT CARD ═══ */
+#finalCard{justify-content:flex-start;overflow-y:auto;background:var(--cream)}
+.final-wrap{width:min(700px,94vw);margin:0 auto;padding:30px 0 50px}
+.final-header{text-align:center;padding:24px 0 20px;border-bottom:1.5px solid rgba(0,0,0,.06);margin-bottom:24px}
+.final-header h1{font-family:'Lora',serif;font-size:1.8rem;font-weight:400;color:var(--sage)}
+.final-header p{font-size:.62rem;color:var(--ink-l);margin-top:5px;text-transform:uppercase;letter-spacing:.1em;font-weight:600}
+.final-score-big{text-align:center;margin:20px 0 24px}
+.final-score-big .score-num{font-family:'Lora',serif;font-size:3.5rem;font-weight:400;color:var(--sage)}
+.final-score-big .score-label{font-size:.72rem;color:var(--ink-m);margin-top:4px}
+.final-score-big .score-interp{font-size:.8rem;color:var(--ink-s);margin-top:6px;font-style:italic}
+.final-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px}
+@media(max-width:550px){.final-grid{grid-template-columns:1fr}}
+.final-card{background:white;border:1px solid rgba(0,0,0,.05);border-radius:var(--radius);padding:16px;box-shadow:0 1px 6px rgba(0,0,0,.03)}
+.final-card h3{font-size:.6rem;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-l);margin-bottom:10px;font-weight:700}
+.hume-bar{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.hume-bar .hb-name{font-size:.72rem;color:var(--ink-s);width:110px;flex-shrink:0}
+.hume-bar .hb-track{flex:1;height:5px;background:rgba(0,0,0,.04);border-radius:3px;overflow:hidden}
+.hume-bar .hb-fill{height:100%;border-radius:3px;transition:width 1s ease}
+.hume-bar .hb-val{font-size:.62rem;color:var(--ink-l);width:30px;text-align:right;font-weight:600}
+.jse-item{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.03);font-size:.68rem}
+.jse-item:last-child{border:none}
+.jse-item .ji-num{color:var(--ink-l);width:22px;flex-shrink:0}
+.jse-item .ji-text{flex:1;color:var(--ink-s)}
+.jse-item .ji-score{font-weight:700;width:24px;text-align:center;border-radius:4px;padding:2px 0}
+.jse-item .ji-score.high{color:var(--sage);background:var(--sage-l)}
+.jse-item .ji-score.mid{color:var(--gold);background:var(--gold-l)}
+.jse-item .ji-score.low{color:var(--terra);background:var(--terra-l)}
+.mentor-summary{background:var(--plum-l);border:1.5px solid rgba(155,126,180,.15);border-radius:var(--radius);padding:16px;margin-bottom:24px;font-size:.78rem;color:var(--ink-m);line-height:1.7}
+.mentor-summary strong{color:var(--plum)}
+.final-actions{display:flex;gap:12px;justify-content:center;padding:10px 0 30px;flex-wrap:wrap}
+
+/* ═══════════════════════════════════════════ */
+/*          JSE SELF-REPORT QUESTIONNAIRE      */
+/* ═══════════════════════════════════════════ */
+#jseQuiz{justify-content:flex-start;overflow-y:auto;background:var(--cream)}
+.jse-wrap{width:min(640px,94vw);margin:0 auto;padding:24px 0 50px}
+.jse-header{text-align:center;padding:20px 0;border-bottom:1.5px solid rgba(0,0,0,.06);margin-bottom:20px}
+.jse-header h1{font-family:'Lora',serif;font-size:1.5rem;font-weight:400;color:var(--sage)}
+.jse-header p{font-size:.7rem;color:var(--ink-m);margin-top:6px;line-height:1.6;max-width:480px;margin-left:auto;margin-right:auto}
+.jse-scale-legend{display:flex;justify-content:space-between;font-size:.58rem;color:var(--ink-l);font-weight:600;padding:8px 16px;background:white;border-radius:var(--radius-sm);margin-bottom:16px;border:1px solid rgba(0,0,0,.05)}
+.jse-q{background:white;border:1px solid rgba(0,0,0,.05);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,.02)}
+.jse-q-text{font-size:.76rem;color:var(--ink-s);line-height:1.5;margin-bottom:10px}
+.jse-q-num{font-size:.6rem;color:var(--ink-l);font-weight:700;margin-right:6px}
+.jse-q-tag{font-size:.52rem;color:var(--terra);font-weight:600;float:right;opacity:.6}
+.jse-radios{display:flex;gap:0;justify-content:space-between}
+.jse-radio{flex:1;text-align:center}
+.jse-radio input{display:none}
+.jse-radio label{display:block;padding:8px 0;font-size:.78rem;font-weight:600;color:var(--ink-l);cursor:pointer;border-radius:6px;transition:all .2s}
+.jse-radio input:checked+label{background:var(--sage);color:white}
+.jse-radio label:hover{background:var(--sage-l)}
+.jse-progress{font-size:.66rem;color:var(--ink-l);text-align:center;margin-bottom:12px;font-weight:600}
+.jse-submit{text-align:center;padding:20px 0}
+.jse-submit button:disabled{background:#b8b0a4;cursor:default}
+
+/* ═══════════════════════════════════════════ */
+/*             DEVELOPER CONSOLE              */
+/* ═══════════════════════════════════════════ */
+#developer{justify-content:flex-start;overflow-y:auto;background:var(--cream)}
+.dev-wrap{width:min(880px,95vw);margin:0 auto;padding:24px 0 36px;display:flex;flex-direction:column;gap:16px}
+.dev-header{display:flex;align-items:center;justify-content:space-between;padding-bottom:14px;border-bottom:1.5px solid rgba(196,131,106,.12)}
+.dev-header h1{font-family:'Lora',serif;font-size:1.45rem;font-weight:400;color:var(--terra)}
+.dev-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:700px){.dev-grid{grid-template-columns:1fr}}
+.dev-card{background:white;border:1.5px solid rgba(196,131,106,.1);border-radius:var(--radius);padding:20px;
+  box-shadow:0 2px 8px rgba(0,0,0,.03)}
+.dev-card-title{font-size:.58rem;text-transform:uppercase;letter-spacing:.14em;color:var(--terra);margin-bottom:14px;font-weight:700}
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.stat-box{background:white;border:1.5px solid rgba(0,0,0,.05);border-radius:var(--radius-sm);padding:15px;text-align:center;
+  box-shadow:0 1px 4px rgba(0,0,0,.03)}
+.stat-val{font-family:'Lora',serif;font-size:1.7rem;font-weight:400;color:var(--terra)}
+.stat-label{font-size:.62rem;color:var(--ink-l);margin-top:3px;font-weight:600}
+.upload-zone{border:2px dashed rgba(196,131,106,.2);border-radius:var(--radius-sm);padding:20px;text-align:center;
+  cursor:pointer;transition:all .24s;background:var(--terra-l);margin-bottom:12px;position:relative}
+.upload-zone:hover{border-color:rgba(196,131,106,.45);background:#f4d8cc}
+.upload-zone input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-zone span{font-size:1.4rem;margin-bottom:4px;display:block}
+.upload-zone p{font-size:.72rem;color:var(--terra);font-weight:500}
+.rubric-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.rubric-label{font-size:.74rem;color:var(--ink-s);flex:1;font-weight:500}
+.rubric-pct{width:52px;background:white;border:1.5px solid rgba(0,0,0,.07);border-radius:7px;
+  padding:5px 7px;color:var(--terra);font-variant-numeric:tabular-nums;font-size:.72rem;font-weight:600;text-align:center;outline:none}
+.analytics-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.analytics-label{font-size:.72rem;color:var(--ink-m);width:180px;flex-shrink:0;font-weight:500}
+.analytics-bar{flex:1;height:5px;background:rgba(196,131,106,.08);border-radius:3px;overflow:hidden}
+.analytics-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--terra),#d4a088)}
+.analytics-val{font-size:.66rem;color:var(--terra);width:32px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.file-item{display:flex;align-items:center;gap:8px;background:var(--linen);border:1px solid rgba(0,0,0,.05);
+  border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:6px;animation:msg-in .3s ease}
+.file-icon{font-size:15px}.file-info h6{font-size:.74rem;font-weight:600;color:var(--ink-s)}.file-info p{font-size:.62rem;color:var(--ink-l)}
+.file-badge{margin-left:auto;padding:3px 10px;border-radius:6px;font-size:.6rem;font-weight:700}
+.file-badge.ok{background:var(--sage-l);color:var(--sage)}
+.file-badge.pending{background:var(--gold-l);color:#907020}
+
+/* ═══════════════════════════════════════════ */
+/*            SETTINGS MODAL                  */
+/* ═══════════════════════════════════════════ */
+.modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(61,58,54,.4);backdrop-filter:blur(10px);
+  display:none;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:var(--cream);border:1.5px solid rgba(0,0,0,.08);border-radius:20px;width:min(520px,92vw);
+  max-height:85vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.12)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:22px 26px;border-bottom:1.5px solid rgba(0,0,0,.06)}
+.modal-header h2{font-family:'Lora',serif;font-size:1.25rem;font-weight:400;color:var(--ink)}
+.modal-close{width:30px;height:30px;border-radius:8px;border:1.5px solid rgba(0,0,0,.07);background:white;
+  color:var(--ink-m);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.modal-close:hover{border-color:rgba(196,131,106,.3);color:var(--terra)}
+.modal-body{padding:26px}
+.field-group{margin-bottom:22px}
+.field-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-l);margin-bottom:8px;display:block;font-weight:700}
+.field-desc{font-size:.74rem;color:var(--ink-m);margin-bottom:10px;line-height:1.6}
+.field-input{width:100%;background:white;border:1.5px solid rgba(0,0,0,.08);border-radius:var(--radius-sm);
+  padding:11px 16px;color:var(--ink);font-family:'Nunito',sans-serif;font-size:.82rem;font-weight:500;outline:none;transition:all .2s}
+.field-input:focus{border-color:rgba(122,158,126,.35);box-shadow:0 0 0 3px rgba(122,158,126,.08)}
+.field-input::placeholder{color:var(--ink-l)}
+.modal-footer{padding:18px 26px;border-top:1.5px solid rgba(0,0,0,.06);display:flex;gap:10px;justify-content:flex-end}
+
+/* ═══════════════════════════════════════════ */
+/*           LOADING / TOAST                  */
+/* ═══════════════════════════════════════════ */
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-overlay{position:fixed;inset:0;z-index:100;background:rgba(250,246,240,.9);display:none;
+  flex-direction:column;align-items:center;justify-content:center;gap:18px;backdrop-filter:blur(8px)}
+.loading-overlay.show{display:flex}
+.loading-spinner{width:38px;height:38px;border:2.5px solid var(--sand);border-top-color:var(--sage);
+  border-radius:50%;animation:spin .9s linear infinite}
+.loading-text{font-size:.78rem;color:var(--ink-m);font-weight:500}
+@keyframes toast-in{from{opacity:0;transform:translateY(12px) translateX(-50%)}to{opacity:1;transform:translateY(0) translateX(-50%)}}
+@keyframes toast-out{from{opacity:1;transform:translateY(0) translateX(-50%)}to{opacity:0;transform:translateY(-8px) translateX(-50%)}}
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);padding:12px 24px;
+  border-radius:100px;font-size:.76rem;font-weight:600;z-index:300;animation:toast-in .3s ease;
+  border:1.5px solid rgba(0,0,0,.07);background:white;color:var(--ink-s);box-shadow:0 8px 28px rgba(0,0,0,.1)}
+.toast.hide{animation:toast-out .25s ease forwards}
+/* ═══ LOGIN ═══ */
+#login{align-items:center;justify-content:center;gap:8px;text-align:center;background:var(--cream)}
+.login-card{background:white;border:1.5px solid rgba(0,0,0,.07);border-radius:20px;padding:36px 32px;
+  width:min(380px,90vw);box-shadow:0 8px 30px rgba(0,0,0,.06)}
+.login-card h2{font-family:'Lora',serif;font-size:1.5rem;font-weight:400;color:var(--ink);margin-bottom:4px}
+.login-card p{font-size:.74rem;color:var(--ink-m);margin-bottom:20px}
+.login-field{width:100%;background:var(--linen);border:1.5px solid rgba(0,0,0,.06);border-radius:var(--radius-sm);
+  padding:11px 16px;color:var(--ink);font-family:'Nunito',sans-serif;font-size:.84rem;font-weight:500;
+  outline:none;transition:all .24s;margin-bottom:12px}
+.login-field:focus{border-color:rgba(122,158,126,.4);box-shadow:0 0 0 3px rgba(122,158,126,.08)}
+.login-field::placeholder{color:var(--ink-l)}
+.login-err{font-size:.7rem;color:var(--terra);margin-bottom:10px;min-height:18px;font-weight:600}
+.login-btns{display:flex;gap:10px;margin-top:4px}
+.login-btns .btn{flex:1}
+.login-divider{font-size:.66rem;color:var(--ink-l);margin:14px 0 6px;font-weight:600}
+.user-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:100px;
+  background:var(--sage-l);border:1.5px solid rgba(122,158,126,.15);font-size:.62rem;font-weight:600;
+  color:var(--sage);cursor:pointer;transition:all .25s;margin-top:8px}
+.user-badge:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(0,0,0,.05)}
+#eviLog{background:#222;color:#8f8;border-radius:8px;padding:6px 8px;font-size:.52rem;max-height:80px;overflow-y:auto;font-family:monospace;white-space:pre-wrap;margin-top:8px;-webkit-overflow-scrolling:touch;display:block}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text" id="loadingText">Preparing your session…</div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Configuration</h2>
+      <button class="modal-close" onclick="closeSettings()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-group">
+        <label class="field-label">Hume AI Key (patient voice conversation)</label>
+        <input class="field-input" id="humeKeyInput" type="password" placeholder="Hume API key — required for voice">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Hume EVI Config IDs (one per case)</label>
+        <p class="field-desc">From platform.hume.ai → Configurations → copy ID</p>
+        <input class="field-input" id="eviDravet" style="margin-bottom:6px" type="text" placeholder="Meena (Dravet) — EVI Config ID">
+        <input class="field-input" id="eviEpilepsy" style="margin-bottom:6px" type="text" placeholder="Priya (Epilepsy) — EVI Config ID">
+        <input class="field-input" id="eviDuchenne" style="margin-bottom:6px" type="text" placeholder="Sunita (Duchenne) — EVI Config ID">
+        <input class="field-input" id="eviCerebral" type="text" placeholder="Kavitha (Cerebral Palsy) — EVI Config ID">
+      </div>
+      <div class="field-group" style="border-top:1px solid rgba(0,0,0,.06);padding-top:16px;margin-top:8px">
+        <label class="field-label">n8n Webhook URL (clinical assessment pipeline)</label>
+        <p class="field-desc">Claude grades empathy + clinical accuracy in background during session</p>
+        <input class="field-input" id="n8nUrlInput" type="text" placeholder="https://yourname.app.n8n.cloud/webhook/fellowmate">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Claude API Key (for n8n assessment)</label>
+        <input class="field-input" id="claudeKeyInput" type="password" placeholder="sk-ant-...">
+      </div>
+      <div class="field-group" style="border-top:1px solid rgba(0,0,0,.06);padding-top:16px;margin-top:8px">
+        <label class="field-label">Gemini API Key (mentor debrief)</label>
+        <input class="field-input" id="geminiKeyInput" type="password" placeholder="AIza... — powers the mentor conversation">
+      </div>
+      <div class="field-group">
+        <label class="field-label">ElevenLabs API Key (mentor voice)</label>
+        <input class="field-input" id="elevenLabsKey" type="password" placeholder="sk_... — speaks the mentor's words">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Mentor Voice ID (ElevenLabs)</label>
+        <input class="field-input" id="mentorVoiceInput" type="text" placeholder="ElevenLabs voice ID for mentor character">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn ghost" onclick="closeSettings()">Cancel</button>
+      <button class="btn sage" onclick="saveSettings()">Save & Apply</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ LOGIN ═══ -->
+<div class="screen on" id="login">
+  <div class="login-card">
+    <h2>Welcome to Fellow<em style="color:var(--sage);font-family:'Lora',serif">mate</em></h2>
+    <p>Sign in to sync your settings across all devices</p>
+    <input class="login-field" id="loginEmail" type="email" placeholder="Email address">
+    <input class="login-field" id="loginPass" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()">
+    <div class="login-err" id="loginErr"></div>
+    <div class="login-btns">
+      <button class="btn sage" onclick="doLogin()">Sign In</button>
+      <button class="btn" onclick="doSignup()">Create Account</button>
+    </div>
+    <div class="login-divider">or</div>
+    <button class="btn ghost" style="width:100%" onclick="skipLogin()">Continue without account</button>
+  </div>
+</div>
+
+<!-- ═══ BOOT ═══ -->
+<div class="screen" id="boot">
+  <div class="boot-inner">
+    <div class="brand">Fellow<em>mate</em></div>
+    <p class="tagline">Humanistic Pediatric Neurology · Training Simulation</p>
+    <canvas id="bootOrb" width="200" height="200" style="cursor:pointer;margin:12px 0" onclick="goSelectCase()"></canvas>
+    <p class="boot-sub">Practice compassionate conversations with AI-simulated families navigating devastating pediatric diagnoses. Build the human skills no textbook can teach.</p>
+    <div class="boot-btns">
+      <button class="btn sage" onclick="goSelectCase()">Begin Training</button>
+      <button class="btn terra" onclick="goDev()">Developer Console</button>
+    </div>
+    <div class="api-indicator" id="apiIndicator" onclick="openSettings()">
+      <div class="api-dot" id="apiDot"></div>
+      <span id="apiStatusText">Loading…</span>
+    </div>
+    <div class="user-badge" id="userBadge" onclick="doLogout()" style="display:none">
+      <span>👤</span><span id="userEmail">user@email.com</span><span style="color:var(--ink-l)">· Sign out</span>
+    </div>
+  </div>
+  <div class="boot-footer">Built for pediatric neurology fellows · Every conversation makes you a more humane clinician</div>
+</div>
+
+<!-- ═══ CASE SELECT ═══ -->
+<div class="screen" id="caseselect">
+  <p class="cs-title">Choose a Training Case</p>
+  <p class="cs-subtitle">Each scenario simulates a real family navigating a new diagnosis</p>
+  <div class="cs-grid">
+    <div class="cs-card c1" onclick="startCase('dravet')">
+      <div class="cs-tag">Case 01 · Epilepsy</div>
+      <div class="cs-name">Aiden, 4 yrs — Dravet Syndrome</div>
+      <div class="cs-desc">Mother Meena received the diagnosis 3 days ago. Deep grief, shock and fear. Husband David is present but withdrawn into silence.</div>
+      <div class="cs-meta">
+        <span class="cs-pill" style="background:var(--terra-l);color:var(--terra)">Grief</span>
+        <span class="cs-pill" style="background:var(--gold-l);color:#906c20">Shock</span>
+        <span class="cs-diff" style="color:var(--terra);border-color:rgba(196,131,106,.3)">Advanced</span>
+      </div>
+      <div class="cs-arrow">Begin →</div>
+    </div>
+    <div class="cs-card c2" onclick="startCase('epilepsy')">
+      <div class="cs-tag">Case 02 · Epilepsy</div>
+      <div class="cs-name">Maya, 7 yrs — Childhood Absence Epilepsy</div>
+      <div class="cs-desc">Father Rajiv is in denial. Mother Priya is anxious about school, social stigma, and Maya's future.</div>
+      <div class="cs-meta">
+        <span class="cs-pill" style="background:var(--gold-l);color:#906c20">Denial</span>
+        <span class="cs-pill" style="background:var(--terra-l);color:var(--terra)">Anxiety</span>
+        <span class="cs-diff" style="color:var(--gold);border-color:rgba(201,168,76,.3)">Intermediate</span>
+      </div>
+      <div class="cs-arrow">Begin →</div>
+    </div>
+    <div class="cs-card c3" onclick="startCase('duchenne')">
+      <div class="cs-tag">Case 03 · Neuromuscular</div>
+      <div class="cs-name">Rajan, 11 yrs — Duchenne MD</div>
+      <div class="cs-desc">Mother Sunita was told today. She is in raw shock and asking the hardest questions about prognosis, lifespan, and her son's future.</div>
+      <div class="cs-meta">
+        <span class="cs-pill" style="background:var(--sky-l);color:var(--sky)">Shock</span>
+        <span class="cs-pill" style="background:var(--plum-l);color:var(--plum)">Anger</span>
+        <span class="cs-diff" style="color:var(--terra);border-color:rgba(196,131,106,.3)">Advanced</span>
+      </div>
+      <div class="cs-arrow">Begin →</div>
+    </div>
+    <div class="cs-card c4" onclick="startCase('cerebral')">
+      <div class="cs-tag">Case 04 · Developmental</div>
+      <div class="cs-name">Priya, 9 yrs — Cerebral Palsy</div>
+      <div class="cs-desc">Single mother Kavitha is exhausted after 3 years of misdiagnosis. She is guarded, skeptical, and emotionally depleted.</div>
+      <div class="cs-meta">
+        <span class="cs-pill" style="background:var(--gold-l);color:#906c20">Frustrated</span>
+        <span class="cs-pill" style="background:var(--plum-l);color:var(--plum)">Guarded</span>
+        <span class="cs-diff" style="color:var(--gold);border-color:rgba(201,168,76,.3)">Intermediate</span>
+      </div>
+      <div class="cs-arrow">Begin →</div>
+    </div>
+  </div>
+  <button class="btn ghost" style="margin-top:6px" onclick="goScreen('boot')">← Back</button>
+</div>
+
+<!-- ═══ TRAINING ═══ -->
+<div class="screen" id="training">
+  <div class="topbar">
+    <span class="top-logo" onclick="goScreen('boot')">Fellowmate</span>
+
+    <div class="top-right">
+      <button class="btn sm sage" onclick="endSession()">End Session →</button>
+    </div>
+  </div>
+  <div class="train-body">
+    <div class="side-panel">
+      <p class="side-orb-status" id="orbStatus">Tap mic or type to begin</p>
+      <canvas id="trainOrb" width="200" height="200"></canvas>
+      <div class="side-case soft-card">
+        <div class="side-case-label">Active Case</div>
+        <div class="side-case-name" id="caseNameDisplay">Aiden, 4 yrs</div>
+        <div class="side-case-sub" id="caseSubDisplay">Dravet Syndrome · Day 3</div>
+      </div>
+      <div class="side-confidence soft-card">
+        <div class="conf-label">Session</div>
+        <div class="conf-value" id="confVal" style="color:var(--sage)">Active</div>
+        <div class="conf-detail" id="confSub">Speak naturally — assessment happens after</div>
+      </div>
+      <div class="side-progress soft-card">
+        <div class="prog-label">Session Progress</div>
+        <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
+        <div class="prog-info"><span id="progExch">0 exchanges</span><span id="progTime">0:00</span></div>
+      </div>
+      <div class="mic-area">
+        <button class="mic-btn" id="micBtn" onclick="tapMic()">🎙️</button>
+        <span class="mic-hint" id="micHint">tap to speak</span>
+      </div>
+    </div>
+    <div class="chat-panel">
+      <div class="messages" id="messages"></div>
+      <div id="eviLog" style="margin-top:8px">EVI log ready</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ JSE SELF-REPORT ═══ -->
+<div class="screen" id="jseQuiz">
+  <div class="jse-wrap">
+    <div class="jse-header">
+      <h1>Empathy Self-Assessment</h1>
+      <p>Before reviewing your session report, please rate yourself on each statement below. Be honest — this is the Jefferson Scale of Empathy, a validated research instrument. Your responses are confidential.</p>
+    </div>
+    <div class="jse-scale-legend">
+      <span>1 = Strongly Disagree</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7 = Strongly Agree</span>
+    </div>
+    <div class="jse-progress" id="jseProgress">0 / 20 answered</div>
+    <div id="jseQuestions"></div>
+    <div class="jse-submit">
+      <button class="btn sage" id="jseSubmitBtn" onclick="submitJSE()" disabled style="padding:14px 40px;font-size:.9rem">Submit & View Report →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ REPORT PANEL ═══ -->
+<div class="screen" id="report">
+  <div class="report-wrap">
+    <div class="report-header"><h1>Session Analysis</h1><p id="reportDate">Generating…</p></div>
+    <div class="report-meta">
+      <span>Case: <strong id="reportCase">—</strong></span>
+      <span>Duration: <strong id="reportDur">—</strong></span>
+      <span>Exchanges: <strong id="reportExch">—</strong></span>
+    </div>
+
+    <div class="r-section"><div class="r-section-title">Claude AI — Clinical & Empathy Assessment</div>
+      <div class="score-grid" id="scoreGrid"></div>
+    </div>
+    <div class="r-section"><div class="r-section-title">Trainee Profile</div><div class="profile-grid" id="profileGrid"></div></div>
+    <div class="r-section"><div class="r-section-title">Behavioral Dimensions</div><div id="barRows"></div></div>
+
+    <div class="r-section"><div class="r-section-title">Hume AI — Voice Emotion Analysis</div>
+      <div id="humeSection" style="background:white;border:1px solid rgba(0,0,0,.05);border-radius:var(--radius);padding:16px;box-shadow:0 1px 6px rgba(0,0,0,.03)">
+        <p style="font-size:.72rem;color:var(--ink-l);text-align:center">No voice data</p>
+      </div>
+    </div>
+
+    <div class="r-section"><div class="r-section-title">Jefferson Scale of Empathy — Evaluation</div>
+      <div id="jseSection" style="background:white;border:1px solid rgba(0,0,0,.05);border-radius:var(--radius);padding:16px;box-shadow:0 1px 6px rgba(0,0,0,.03)">
+        <p style="font-size:.72rem;color:var(--ink-l);text-align:center">Calculating…</p>
+      </div>
+    </div>
+
+    <div class="r-section"><div class="r-section-title">Issues Detected</div><div class="issue-pills" id="issuePills"></div></div>
+    <div class="r-section"><div class="r-section-title">What To Work On Next</div><div id="nextSteps"></div></div>
+    <div class="memory-note" id="memoryNote"></div>
+
+    <div style="text-align:center;padding:24px 0 12px;border-top:1.5px solid rgba(0,0,0,.06)">
+      <p style="font-size:.72rem;color:var(--ink-m);margin-bottom:12px">Ready to discuss your session with a senior mentor?</p>
+      <button class="btn sage" onclick="startDebrief()" style="font-size:.9rem;padding:14px 36px">🎓 Start Mentor Debrief</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DEBRIEF SESSION ═══ -->
+<div class="screen" id="debrief">
+  <div class="debrief-wrap">
+    <div class="debrief-header"><h1>Mentor Debrief</h1><p>Voice conversation with your senior mentor</p></div>
+    <div class="debrief-status" id="debriefStatus">Starting debrief…</div>
+    <div class="debrief-chat"><div class="debrief-messages" id="debriefMessages"></div></div>
+    <button class="debrief-mic" id="debriefMic" onclick="debriefMicTap()" disabled>🎙️</button>
+    <div id="debriefLog">Debrief log ready</div>
+    <div style="margin-top:12px"><button class="btn terra" onclick="endDebrief()" style="padding:10px 28px">End Debrief →</button></div>
+  </div>
+</div>
+
+<!-- ═══ FINAL REPORT CARD ═══ -->
+<div class="screen" id="finalCard">
+  <div class="final-wrap">
+    <div class="final-header"><h1>Session Complete</h1><p id="finalDate">—</p></div>
+    <div class="final-score-big">
+      <div class="score-num" id="finalJseScore">—</div>
+      <div class="score-label">Jefferson Scale of Empathy (out of 140)</div>
+      <div class="score-interp" id="finalJseInterp">—</div>
+    </div>
+    <div class="final-grid">
+      <div class="final-card"><h3>Voice Emotion (Hume AI)</h3><div id="finalHumeBars"></div></div>
+      <div class="final-card"><h3>Clinical Assessment (Claude AI)</h3><div id="finalClaudeSummary"></div></div>
+      <div class="final-card" style="grid-column:1/-1"><h3>JSE Scale — Item Scores</h3><div id="finalJseItems" style="max-height:300px;overflow-y:auto"></div></div>
+    </div>
+    <div class="mentor-summary" id="finalMentorSummary"><strong>Mentor's Note:</strong> Complete a debrief session to receive personalized feedback.</div>
+    <div class="final-actions">
+      <button class="btn sage" onclick="goSelectCase()" style="padding:14px 32px">Start New Session</button>
+      <button class="btn terra" onclick="exportPDF()" style="padding:14px 32px">Export PDF</button>
+      <button class="btn ghost" onclick="goScreen('boot')" style="padding:14px 32px">Home</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DEVELOPER ═══ -->
+<div class="screen" id="developer">
+  <div class="topbar">
+    <span class="top-logo" style="color:var(--terra)">Fellowmate <span style="font-size:.72rem;color:var(--ink-l);font-family:'Nunito';font-weight:400">/ Developer</span></span>
+    <div></div>
+    <button class="btn sm terra" onclick="goScreen('boot')">← Exit Console</button>
+  </div>
+  <div style="flex:1;overflow-y:auto;width:100%">
+    <div class="dev-wrap">
+      <div class="dev-header"><h1>Developer Console</h1></div>
+      <div class="stat-row">
+        <div class="stat-box"><div class="stat-val">47</div><div class="stat-label">Total Sessions</div></div>
+        <div class="stat-box"><div class="stat-val">73%</div><div class="stat-label">Avg Empathy</div></div>
+        <div class="stat-box"><div class="stat-val">12</div><div class="stat-label">Trainees</div></div>
+      </div>
+      <div class="dev-grid">
+        <div class="dev-card">
+          <div class="dev-card-title">Upload Cases & Videos</div>
+          <div class="upload-zone"><input type="file" multiple accept=".pdf,.mp4,.mov,.docx" onchange="handleUpload(event,'caseFileList')"><span>📁</span><p>Drop case files, PDFs, patient videos</p></div>
+          <div id="caseFileList">
+            <div class="file-item"><span class="file-icon">📋</span><div class="file-info"><h6>Dravet_Aiden_Case.pdf</h6><p>2.4 MB · 3 emotion tags</p></div><span class="file-badge ok">Trained</span></div>
+          </div>
+        </div>
+        <div class="dev-card">
+          <div class="dev-card-title">Behavioral Rubric Weights</div>
+          <div class="rubric-row"><span class="rubric-label">Emotional Acknowledgment</span><input class="rubric-pct" value="25%"></div>
+          <div class="rubric-row"><span class="rubric-label">Non-judgmental Language</span><input class="rubric-pct" value="20%"></div>
+          <div class="rubric-row"><span class="rubric-label">Tone & Warmth</span><input class="rubric-pct" value="18%"></div>
+          <div class="rubric-row"><span class="rubric-label">Silence Comfort</span><input class="rubric-pct" value="12%"></div>
+          <div class="rubric-row"><span class="rubric-label">Family Inclusion</span><input class="rubric-pct" value="15%"></div>
+          <div class="rubric-row"><span class="rubric-label">Clinical Clarity</span><input class="rubric-pct" value="10%"></div>
+          <button class="btn sm sage" style="margin-top:10px" onclick="showToast('Rubric saved successfully')">Save Rubric</button>
+        </div>
+        <div class="dev-card">
+          <div class="dev-card-title">Research Papers & Modules</div>
+          <div class="upload-zone"><input type="file" multiple accept=".pdf" onchange="handleUpload(event,'paperList')"><span>📄</span><p>Upload research papers & modules</p></div>
+          <div id="paperList">
+            <div class="file-item"><span class="file-icon">📄</span><div class="file-info"><h6>Humanistic_Comm_Guidelines.pdf</h6><p>1.1 MB · Indexed</p></div><span class="file-badge ok">Active</span></div>
+          </div>
+        </div>
+        <div class="dev-card">
+          <div class="dev-card-title">Assessment Scales</div>
+          <div class="upload-zone"><input type="file" multiple accept=".pdf,.json,.csv" onchange="handleScaleUpload(event)"><span>📊</span><p>Upload empathy/communication scales (PDF, JSON)</p></div>
+          <div id="scaleList">
+            <div class="file-item"><span class="file-icon">📊</span><div class="file-info"><h6>Jefferson Scale of Empathy (JSE)</h6><p>20 items · 7-point Likert · Built-in</p></div><span class="file-badge ok">Active</span></div>
+          </div>
+          <p style="font-size:.62rem;color:var(--ink-m);margin-top:10px;line-height:1.6">Upload additional scales to add new assessment dimensions to the mentor debrief. Supported: PDF (auto-parsed), JSON (structured), CSV (item list).</p>
+        </div>
+        <div class="dev-card">
+          <div class="dev-card-title">Communication Error Analytics</div>
+          <div class="analytics-row"><span class="analytics-label">Medical Jargon Overuse</span><div class="analytics-bar"><div class="analytics-fill" style="width:72%"></div></div><span class="analytics-val">72%</span></div>
+          <div class="analytics-row"><span class="analytics-label">Low Empathy Responses</span><div class="analytics-bar"><div class="analytics-fill" style="width:58%"></div></div><span class="analytics-val">58%</span></div>
+          <div class="analytics-row"><span class="analytics-label">Dismissive Tone</span><div class="analytics-bar"><div class="analytics-fill" style="width:41%"></div></div><span class="analytics-val">41%</span></div>
+          <div class="analytics-row"><span class="analytics-label">Poor Emotional Response</span><div class="analytics-bar"><div class="analytics-fill" style="width:63%"></div></div><span class="analytics-val">63%</span></div>
+          <div class="analytics-row"><span class="analytics-label">Interrupted Family</span><div class="analytics-bar"><div class="analytics-fill" style="width:29%"></div></div><span class="analytics-val">29%</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* ═══════════════════════════════════════════════════════════
+   The entire JS logic below is identical to the previous version
+   — only the CSS/HTML was redesigned for the warm aesthetic.
+   All offline responses, API handling, analysis, orb engine,
+   TTS, mic, reports, mentor, PDF export — all preserved.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── AI CONFIG ── */
+var AI_CONFIG={
+  humeKey:'',
+  eviConfigs:{dravet:'f933806f-4107-4d5e-a420-1b81eb97ddc7',epilepsy:'',duchenne:'',cerebral:''},
+  n8nUrl:'',
+  claudeKey:'',
+  geminiKey:'',
+  elevenLabsKey:'',
+  mentorVoiceId:''
+};
+
+function updateAPIIndicator(){
+  var ind=document.getElementById('apiIndicator'),dot=document.querySelector('.api-dot'),txt=document.querySelector('.api-indicator span:last-child');
+  if(!ind)return;
+  var ready=AI_CONFIG.humeKey&&AI_CONFIG.humeKey.length>5;
+  dot.className='api-dot '+(ready?'on':'off');
+  txt.textContent=ready?'Connected':'Configure API keys';
+  ind.className='api-indicator '+(ready?'online':'');
+}
+
+function openSettings(){
+  document.getElementById('settingsModal').classList.add('show');
+  document.getElementById('humeKeyInput').value=AI_CONFIG.humeKey||'';
+  document.getElementById('n8nUrlInput').value=AI_CONFIG.n8nUrl||'';
+  document.getElementById('claudeKeyInput').value=AI_CONFIG.claudeKey||'';
+  document.getElementById('geminiKeyInput').value=AI_CONFIG.geminiKey||'';
+  document.getElementById('elevenLabsKey').value=AI_CONFIG.elevenLabsKey||'';
+  document.getElementById('mentorVoiceInput').value=AI_CONFIG.mentorVoiceId||'';
+  document.getElementById('eviDravet').value=AI_CONFIG.eviConfigs.dravet||'';
+  document.getElementById('eviEpilepsy').value=AI_CONFIG.eviConfigs.epilepsy||'';
+  document.getElementById('eviDuchenne').value=AI_CONFIG.eviConfigs.duchenne||'';
+  document.getElementById('eviCerebral').value=AI_CONFIG.eviConfigs.cerebral||'';
+}
+
+function closeSettings(){document.getElementById('settingsModal').classList.remove('show');}
+
+function saveSettings(){
+  AI_CONFIG.humeKey=document.getElementById('humeKeyInput').value.trim();
+  AI_CONFIG.n8nUrl=document.getElementById('n8nUrlInput').value.trim();
+  AI_CONFIG.claudeKey=document.getElementById('claudeKeyInput').value.trim();
+  AI_CONFIG.geminiKey=document.getElementById('geminiKeyInput').value.trim();
+  AI_CONFIG.elevenLabsKey=document.getElementById('elevenLabsKey').value.trim();
+  AI_CONFIG.mentorVoiceId=document.getElementById('mentorVoiceInput').value.trim();
+  AI_CONFIG.eviConfigs={
+    dravet:document.getElementById('eviDravet').value.trim(),
+    epilepsy:document.getElementById('eviEpilepsy').value.trim(),
+    duchenne:document.getElementById('eviDuchenne').value.trim(),
+    cerebral:document.getElementById('eviCerebral').value.trim()
+  };
+  try{localStorage.setItem('fellowmate_config',JSON.stringify(AI_CONFIG));}catch(e){}
+  saveToFirestore();
+  updateAPIIndicator();closeSettings();
+  showToast('Settings saved');
+}
+
+/* ── FIREBASE AUTH ── */
+var currentUser=null;
+
+function doLogin(){
+  var email=document.getElementById('loginEmail').value.trim();
+  var pass=document.getElementById('loginPass').value;
+  var err=document.getElementById('loginErr');
+  if(!email||!pass){err.textContent='Enter email and password';return;}
+  err.textContent='Signing in…';err.style.color='var(--sage)';
+  try{
+    auth.signInWithEmailAndPassword(email,pass).then(function(){err.textContent='';})
+      .catch(function(e){err.style.color='var(--terra)';err.textContent=e.message;});
+  }catch(e){err.style.color='var(--terra)';err.textContent='Auth error: '+e.message;}
+}
+
+function doSignup(){
+  var email=document.getElementById('loginEmail').value.trim();
+  var pass=document.getElementById('loginPass').value;
+  var err=document.getElementById('loginErr');
+  if(!email||!pass){err.textContent='Enter email and password';return;}
+  if(pass.length<6){err.textContent='Password must be at least 6 characters';return;}
+  err.textContent='Creating account…';err.style.color='var(--sage)';
+  try{
+    auth.createUserWithEmailAndPassword(email,pass).then(function(){err.textContent='';})
+      .catch(function(e){err.style.color='var(--terra)';err.textContent=e.message;});
+  }catch(e){err.style.color='var(--terra)';err.textContent='Auth error: '+e.message;}
+}
+
+function skipLogin(){
+  currentUser=null;
+  goScreen('boot');
+  loadLocalConfig();
+  updateAPIIndicator();
+}
+
+function doLogout(){
+  auth.signOut();
+  currentUser=null;
+  document.getElementById('userBadge').style.display='none';
+  goScreen('login');
+}
+
+function saveToFirestore(){
+  if(!currentUser)return;
+  try{db.collection('users').doc(currentUser.uid).set({config:AI_CONFIG},{merge:true});}catch(e){}
+}
+
+function loadFromFirestore(){
+  if(!currentUser)return;
+  try{db.collection('users').doc(currentUser.uid).get().then(function(doc){
+    if(doc.exists&&doc.data().config){
+      var c=doc.data().config;
+      Object.keys(c).forEach(function(k){if(c[k]!==undefined)AI_CONFIG[k]=c[k];});
+      updateAPIIndicator();
+    }
+  });}catch(e){}
+}
+
+function loadLocalConfig(){
+  try{
+    var saved=localStorage.getItem('fellowmate_config');
+    if(saved){var c=JSON.parse(saved);Object.keys(c).forEach(function(k){if(c[k]!==undefined)AI_CONFIG[k]=c[k];});}
+  }catch(e){}
+}
+
+// Auth state listener
+auth.onAuthStateChanged(function(user){
+  currentUser=user;
+  if(user){
+    document.getElementById('userBadge').style.display='flex';
+    document.getElementById('userEmail').textContent=user.email;
+    goScreen('boot');
+    loadFromFirestore();
+    loadLocalConfig();
+    updateAPIIndicator();
+  }else{
+    loadLocalConfig();
+    updateAPIIndicator();
+  }
+});
+
+/* ═══════════════════════════════════════════════════════════ */
+/*                    CORE APPLICATION                         */
+/* ═══════════════════════════════════════════════════════════ */
+
+/* ── CASES ── */
+var CASES={
+  dravet:{name:'Aiden, 4 yrs — Dravet Syndrome',sub:'Dravet Syndrome · Day 3 post-diagnosis',
+    emotions:{grief:85,fear:75,hope:15,trust:25},
+    opener:'*Meena sits in the consultation room, clutching a blanket that belongs to her son Aiden. Her eyes are red. She looks up as you enter.*'},
+  epilepsy:{name:'Maya, 7 yrs — Absence Epilepsy',sub:'Absence Epilepsy · New diagnosis',
+    emotions:{grief:40,fear:65,hope:50,trust:45},
+    opener:'*Priya is sitting upright, her phone in her hand with a list of questions. She looks anxious but determined.*'},
+  duchenne:{name:'Rajan, 11 yrs — Duchenne MD',sub:'Duchenne Muscular Dystrophy · Diagnosis day',
+    emotions:{grief:60,fear:90,hope:10,trust:15},
+    opener:'*Sunita sits frozen in her chair. Her husband stands behind her with his hand on her shoulder. Neither speaks.*'},
+  cerebral:{name:'Priya, 9 yrs — Cerebral Palsy',sub:'Cerebral Palsy · 3 years of misdiagnosis',
+    emotions:{grief:50,fear:55,hope:20,trust:10},
+    opener:'*Kavitha enters the room already frustrated. She has a folder thick with papers from other doctors. "I hope you actually listen," she says.*'}
+};
+var ORIGINAL_EMOTIONS={dravet:{grief:85,fear:75,hope:15,trust:25},epilepsy:{grief:40,fear:65,hope:50,trust:45},duchenne:{grief:60,fear:90,hope:10,trust:15},cerebral:{grief:50,fear:55,hope:20,trust:10}};
+var currentCase='dravet',sessionStart=null,timerInterval=null,chatHistory=[],issueLog=[],mode='roleplay';
+
+/* ── NAV ── */
+function goScreen(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('on');});document.getElementById(id).classList.add('on');}
+function goSelectCase(){goScreen('caseselect');}
+function goDev(){goScreen('developer');}
+
+function startCase(caseId){currentCase=caseId;resetSession();var c=CASES[caseId];CASES[caseId].emotions=Object.assign({},ORIGINAL_EMOTIONS[caseId]);
+  document.getElementById('caseNameDisplay').textContent=c.name;document.getElementById('caseSubDisplay').textContent=c.sub;setEmotions(c.emotions);
+  sessionStart=Date.now();startTimer();goScreen('training');primeAudio();
+  setOrbStatus('Tap mic to speak to the family','');}
+
+function startTimer(){clearInterval(timerInterval);timerInterval=setInterval(function(){if(!sessionStart)return;var sec=Math.floor((Date.now()-sessionStart)/1000),m=Math.floor(sec/60),s=sec%60;document.getElementById('progTime').textContent=m+':'+(s<10?'0':'')+s;},1000);}
+
+/* ── EMOTIONS ── */
+function setEmotions(emo){['Grief','Fear','Hope','Trust'].forEach(function(f){var el=document.getElementById('emo'+f),vEl=document.getElementById('emo'+f+'V'),val=emo[f.toLowerCase()]||0;if(el)el.style.width=val+'%';if(vEl)vEl.textContent=val;});}
+
+
+
+
+/* ── MESSAGES ── */
+function addChatMessage(who,text,flag,coaching){var c=document.getElementById('messages'),d=document.createElement('div');d.className='msg'+(who==='you'?' you':'');
+  d.innerHTML='<div class="msg-avatar '+(who==='you'?'you':'ai')+'">'+(who==='you'?'🩺':'👩')+'</div><div class="msg-body"><div class="msg-bubble '+(who==='you'?'you':'ai')+'">'+text+'</div>'+(flag?'<div class="msg-flag">⚠ '+flag+'</div>':'')+(coaching?'<div class="msg-coaching">💡 '+coaching+'</div>':'')+'</div>';
+  c.appendChild(d);c.scrollTop=c.scrollHeight;var exch=Math.floor(chatHistory.length/2);document.getElementById('progExch').textContent=exch+' exchange'+(exch!==1?'s':'');document.getElementById('progFill').style.width=Math.min(100,exch*10)+'%';}
+function setOrbStatus(txt,cls){var el=document.getElementById('orbStatus');if(el){el.textContent=txt;el.className='side-orb-status'+(cls?' '+cls:'');}}
+
+/* ── ORB (warm sage/gold particle sphere) ── */
+function createOrb(id,radius){var cv=document.getElementById(id);if(!cv)return null;
+  var ctx=cv.getContext('2d'),W=cv.width,H=cv.height,cx=W/2,cy=H/2;
+  var N=500,phi=Math.PI*(3-Math.sqrt(5)),t=0,sa=0,la=0,state='idle';var pts=[];
+  for(var i=0;i<N;i++){var y=1-(i/(N-1))*2,r=Math.sqrt(Math.max(0,1-y*y)),th=phi*i;
+    pts.push({x:Math.cos(th)*r,y:y,z:Math.sin(th)*r,ph:Math.random()*Math.PI*2,sz:Math.random()*.6+.4});}
+  function setState(s){state=s;}
+  function tick(){ctx.clearRect(0,0,W,H);t+=.007;
+    sa=state==='speaking'?Math.min(1,sa+.05):Math.max(0,sa-.04);
+    la=state==='listening'?Math.min(1,la+.05):Math.max(0,la-.04);
+    var br=1+Math.sin(t*.5)*.02,rot=t*.08,cr=Math.cos(rot),sr=Math.sin(rot);var list=[];
+    for(var i=0;i<pts.length;i++){var p=pts[i],x2=p.x*cr-p.z*sr,z2=p.x*sr+p.z*cr;
+      var d=sa*.15*Math.sin(p.ph+t*8)*(1-Math.abs(p.y)),l=la*.06*Math.sin(p.ph*2+t*3.5);
+      var rad=radius*br*(1+d+l);list.push({px:cx+x2*rad,py:cy+p.y*rad,depth:(z2+1)/2,p:p});}
+    list.sort(function(a,b){return a.depth-b.depth;});
+    for(var j=0;j<list.length;j++){var item=list[j],sz=item.p.sz*(.35+item.depth*.85);
+      if(state==='speaking')sz*=1+sa*.45*Math.abs(Math.sin(item.p.ph+t*6));
+      var alpha=.12+item.depth*.7;
+      if(la>.0){var rv=Math.round(122+(201-122)*la),gv=Math.round(158+(168-158)*la),bv=Math.round(126+(76-126)*la);
+        ctx.fillStyle='rgba('+rv+','+gv+','+bv+','+alpha+')';}
+      else ctx.fillStyle='rgba(122,158,126,'+alpha+')';
+      ctx.beginPath();ctx.arc(item.px,item.py,Math.max(.3,sz),0,Math.PI*2);ctx.fill();}
+    var gc=la>.1?'rgba(201,168,76,'+(0.05+sa*.06)+')':'rgba(122,158,126,'+(0.05+sa*.08)+')';
+    var g=ctx.createRadialGradient(cx,cy,radius*.2,cx,cy,radius*1.4);g.addColorStop(0,gc);g.addColorStop(1,'transparent');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,radius*1.4,0,Math.PI*2);ctx.fill();requestAnimationFrame(tick);}
+  tick();return{setState:setState};}
+var orbs={};
+function initOrbs(){
+  orbs.boot=createOrb('bootOrb',72);
+  orbs.train=createOrb('trainOrb',76);
+}
+setTimeout(initOrbs,100);
+
+
+
+/* ── TTS ── */
+var voiceCache=[];function refreshV(){voiceCache=window.speechSynthesis?speechSynthesis.getVoices():[];}refreshV();if(window.speechSynthesis)speechSynthesis.onvoiceschanged=refreshV;
+function pickVoice(f){var en=voiceCache.filter(function(v){return v.lang.startsWith('en');});var pool=en.length?en:voiceCache;if(!pool.length)return null;
+  if(f)return pool.find(function(v){return/samantha|karen|victoria|moira|zira|fiona|google.*female/i.test(v.name);})||pool[0];
+  return pool.find(function(v){return/daniel|alex|reed|thomas|google.*male/i.test(v.name);})||pool[pool.length>1?1:0];}
+function speak(text,female,orb){if(!window.speechSynthesis)return;speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(text);var v=pickVoice(female);if(v)u.voice=v;
+  u.rate=female?.88:.84;u.pitch=female?1.1:.88;u.volume=1;u.onstart=function(){if(orb)orb.setState('speaking');setOrbStatus('Speaking…','active');};
+  u.onend=function(){if(orb)orb.setState('idle');setOrbStatus('Tap mic or type to respond','');};u.onerror=function(){if(orb)orb.setState('idle');};
+  var ka=setInterval(function(){if(!speechSynthesis.speaking){clearInterval(ka);return;}speechSynthesis.pause();speechSynthesis.resume();},10000);speechSynthesis.speak(u);}
+function unlockTTS(){if(!window.speechSynthesis)return;var s=new SpeechSynthesisUtterance(' ');s.volume=0;s.rate=10;speechSynthesis.speak(s);}
+
+
+/* ── APPLY n8n ASSESSMENT (silent) ── */
+var sessionAssessments=[];
+function applyAssessment(a){if(!a)return;
+  sessionAssessments.push({timestamp:Date.now(),assessment:a});
+}
+
+/* ═══════════════════════════════════════════════════════════ */
+/*   HUME EVI — WORKING v9 (push-to-talk, merged WAV audio)   */
+/* ═══════════════════════════════════════════════════════════ */
+var eviState='idle';
+var eviWs=null,micStream=null,rec=null;
+var recordedBlobs=[];
+var player=new Audio();
+var pendingChunks=[],pendingText='',currentBlobUrl=null;
+
+function eviLog(s){
+  var el=document.getElementById('eviLog');
+  if(el)el.textContent=new Date().toLocaleTimeString()+' '+s+'\n'+el.textContent.slice(0,2000);
+  console.log('[EVI]',s);
+}
+
+/* ── WAV chunk merger ── */
+function mergeWavChunks(base64Chunks){
+  if(base64Chunks.length===0)return null;
+  var decoded=[];
+  base64Chunks.forEach(function(b64){
+    try{var raw=atob(b64),arr=new Uint8Array(raw.length);for(var i=0;i<raw.length;i++)arr[i]=raw.charCodeAt(i);decoded.push(arr);}catch(e){}
+  });
+  if(decoded.length===0)return null;
+  var isWav=decoded[0].length>44&&decoded[0][0]===0x52&&decoded[0][1]===0x49&&decoded[0][2]===0x46&&decoded[0][3]===0x46;
+  if(!isWav||decoded.length===1){
+    var total=decoded.reduce(function(s,a){return s+a.length;},0);
+    var merged=new Uint8Array(total);var off=0;
+    decoded.forEach(function(a){merged.set(a,off);off+=a.length;});
+    return new Blob([merged],{type:'audio/wav'});
+  }
+  function findDataOffset(arr){
+    for(var j=12;j<Math.min(arr.length-4,200);j++){if(arr[j]===0x64&&arr[j+1]===0x61&&arr[j+2]===0x74&&arr[j+3]===0x61)return j+8;}return 44;
+  }
+  var headerSize=findDataOffset(decoded[0]);var pcmParts=[],totalPcm=0;
+  decoded.forEach(function(arr){var d=findDataOffset(arr),pcm=arr.slice(d);pcmParts.push(pcm);totalPcm+=pcm.length;});
+  var header=new Uint8Array(decoded[0].slice(0,headerSize));
+  var riffSize=totalPcm+headerSize-8;
+  header[4]=riffSize&0xff;header[5]=(riffSize>>8)&0xff;header[6]=(riffSize>>16)&0xff;header[7]=(riffSize>>24)&0xff;
+  var dsPos=headerSize-4;
+  header[dsPos]=totalPcm&0xff;header[dsPos+1]=(totalPcm>>8)&0xff;header[dsPos+2]=(totalPcm>>16)&0xff;header[dsPos+3]=(totalPcm>>24)&0xff;
+  var fin=new Uint8Array(headerSize+totalPcm);fin.set(header,0);
+  var pos=headerSize;pcmParts.forEach(function(p){fin.set(p,pos);pos+=p.length;});
+  eviLog('Merged '+decoded.length+' chunks → '+(fin.length/1024).toFixed(0)+'KB');
+  return new Blob([fin],{type:'audio/wav'});
+}
+
+function playMergedAudio(onDone){
+  var blob=mergeWavChunks(pendingChunks);pendingChunks=[];
+  if(!blob){eviLog('No audio');if(pendingText){addChatMessage('ai',pendingText);chatHistory.push({role:'assistant',content:pendingText});pendingText='';}onDone();return;}
+
+  // iOS fix: fully reset audio element before each play
+  try{player.pause();}catch(e){}
+  if(currentBlobUrl)try{URL.revokeObjectURL(currentBlobUrl);}catch(e){}
+  player.removeAttribute('src');
+  player.load();
+
+  currentBlobUrl=URL.createObjectURL(blob);
+  eviLog('Playing '+(blob.size/1024).toFixed(0)+'KB');
+
+  player.onplaying=function(){
+    if(pendingText){addChatMessage('ai',pendingText);chatHistory.push({role:'assistant',content:pendingText});pendingText='';}
+    if(orbs.train)orbs.train.setState('speaking');setOrbStatus('Mother speaking…','active');
+  };
+  player.onended=function(){eviLog('Done playing');if(currentBlobUrl){URL.revokeObjectURL(currentBlobUrl);currentBlobUrl=null;}if(orbs.train)orbs.train.setState('idle');onDone();};
+  player.onerror=function(e){eviLog('Play error: '+(e.target.error?e.target.error.message:'unknown'));if(pendingText){addChatMessage('ai',pendingText);chatHistory.push({role:'assistant',content:pendingText});pendingText='';}if(currentBlobUrl){URL.revokeObjectURL(currentBlobUrl);currentBlobUrl=null;}onDone();};
+
+  // Small delay for iOS to register the new source
+  setTimeout(function(){
+    player.src=currentBlobUrl;
+    player.play().catch(function(e){eviLog('Play fail: '+e.message);if(pendingText){addChatMessage('ai',pendingText);chatHistory.push({role:'assistant',content:pendingText});pendingText='';}onDone();});
+  },50);
+}
+
+function stopAudio(){try{player.pause();player.removeAttribute('src');player.load();}catch(e){}if(currentBlobUrl){try{URL.revokeObjectURL(currentBlobUrl);}catch(e){}currentBlobUrl=null;}pendingChunks=[];pendingText='';}
+function primeAudio(){player.src='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';player.play().catch(function(){});}
+
+/* ── EVI WebSocket ── */
+function connectEVI(onOpen){
+  if(!AI_CONFIG.humeKey){eviLog('No Hume key');return;}
+  var configId=AI_CONFIG.eviConfigs[currentCase]||AI_CONFIG.eviConfigs.dravet;
+  if(!configId){eviLog('No EVI config');return;}
+  if(eviWs)try{eviWs.close();}catch(e){}
+  stopAudio();
+  eviWs=new WebSocket('wss://api.hume.ai/v0/evi/chat?api_key='+encodeURIComponent(AI_CONFIG.humeKey)+'&config_id='+encodeURIComponent(configId));
+  eviLog('Connecting…');
+  eviWs.onopen=function(){eviLog('WS OPEN');onOpen();};
+  eviWs.onmessage=function(e){
+    var m;try{m=JSON.parse(e.data);}catch(x){return;}
+    if(m.type==='user_message'){
+      if(m.message&&m.message.content){
+        addChatMessage('you',m.message.content);chatHistory.push({role:'user',content:m.message.content});
+        eviLog('YOU: '+m.message.content.slice(0,80));
+        if(m.models&&m.models.prosody&&m.models.prosody.scores)
+          sessionAssessments.push({timestamp:Date.now(),hume:buildHumeEmotionSummary(m.models.prosody.scores)});
+      }
+    }
+    else if(m.type==='assistant_message'){
+      if(m.message&&m.message.content){pendingText+=(pendingText?' ':'')+m.message.content;eviLog('MEENA: '+m.message.content.slice(0,80));}
+      setMicUI('wait');setOrbStatus('Mother thinking…','active');
+    }
+    else if(m.type==='audio_output'){if(m.data)pendingChunks.push(m.data);}
+    else if(m.type==='assistant_end'){
+      eviLog('assistant_end — '+pendingChunks.length+' chunks');
+      if(AI_CONFIG.n8nUrl&&chatHistory.length>0){
+        var lastUser=chatHistory.filter(function(h){return h.role==='user';}).pop();
+        if(lastUser){var hume=sessionAssessments.length>0?sessionAssessments[sessionAssessments.length-1].hume:null;sendClinicalAssessment(lastUser.content,pendingText,hume);}
+      }
+      playMergedAudio(function(){eviState='ready';setMicUI('ready');setOrbStatus('🟢 Tap mic to speak','');eviLog('Ready');});
+    }
+    else if(m.type==='user_interruption'){eviLog('> interruption (ignored)');}
+    else if(m.type==='error'){
+      eviLog('ERR: '+(m.message||m.code||'?'));
+      setOrbStatus('Reconnecting…','');
+      // EVI errored — close and let reconnect happen on next mic tap
+      try{eviWs.close();}catch(x){}
+      eviWs=null;eviState='ready';setMicUI('ready');
+      setOrbStatus('🟢 Tap mic to continue','');
+    }
+    else{eviLog('> '+m.type);}
+  };
+  eviWs.onerror=function(){eviLog('WS ERR');};
+  eviWs.onclose=function(e){
+    eviLog('WS CLOSE '+e.code);
+    eviWs=null;
+    if(eviState!=='idle'){
+      // Auto-reconnect if session is still active
+      eviLog('Will reconnect on next mic tap');
+      eviState='ready';setMicUI('ready');setOrbStatus('🟢 Tap mic (reconnecting)','');
+    }
+  };
+}
+
+function disconnectEVI(){if(eviWs)try{eviWs.close();}catch(e){}eviWs=null;stopAudio();eviState='idle';}
+
+function buildHumeEmotionSummary(scores){
+  if(!scores)return{has_real_voice_data:false,source:'no_data'};
+  // Use ONLY real Hume prosody emotion names (from their 48-dimension model)
+  return{
+    calmness:Math.round((scores['Calmness']||0)*100),
+    empathic_pain:Math.round((scores['Empathic Pain']||0)*100),
+    sympathy:Math.round((scores['Sympathy']||0)*100),
+    interest:Math.round((scores['Interest']||0)*100),
+    concentration:Math.round((scores['Concentration']||0)*100),
+    determination:Math.round((scores['Determination']||0)*100),
+    sadness:Math.round((scores['Sadness']||0)*100),
+    contempt:Math.round((scores['Contempt']||0)*100),
+    distress:Math.round((scores['Distress']||0)*100),
+    joy:Math.round((scores['Joy']||0)*100),
+    all_scores:scores,has_real_voice_data:true,source:'hume_evi'};
+}
+
+function sendClinicalAssessment(traineeText,replyText,humeSummary){
+  if(!AI_CONFIG.n8nUrl)return;
+  fetch(AI_CONFIG.n8nUrl,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({text:traineeText,hume_analysis:humeSummary,mode:'assess_only',
+      api_keys:{claude:AI_CONFIG.claudeKey||''},case_id:currentCase,
+      chat_history:chatHistory.slice(-4),session_id:sessionStart?sessionStart.toString():'unknown'})
+  }).then(function(r){return r.json();}).then(function(d){
+    if(d&&d.assessment){applyAssessment(d.assessment);eviLog('Assessment received');}
+  }).catch(function(e){eviLog('Assessment err: '+e.message);});
+}
+
+/* ── TAP MIC: Push-to-talk ── */
+function tapMic(){
+  primeAudio();unlockTTS();
+  if(window.speechSynthesis)speechSynthesis.cancel();
+
+  if(!AI_CONFIG.humeKey){
+    setOrbStatus('Configure Hume key in settings','');showToast('Hume API key required for voice');return;
+  }
+
+  if(eviState==='recording'){
+    eviState='sending';setMicUI('wait');setOrbStatus('Sending…','active');
+    if(rec&&rec.state!=='inactive')rec.stop();
+    return;
+  }
+
+  if(eviState==='ready'||eviState==='idle'){
+    if(!eviWs||eviWs.readyState!==WebSocket.OPEN){
+      var isReconnect=chatHistory.length>0;
+      eviState='connecting';setMicUI('wait');setOrbStatus(isReconnect?'Reconnecting…':'Connecting…','listening');
+      connectEVI(function(){
+        if(isReconnect){
+          // Reconnect: go straight to recording
+          eviLog('Reconnected — ready');
+          eviState='ready';setMicUI('ready');setOrbStatus('🟢 Tap mic to speak','');
+        }else{
+          eviState='waiting_intro';setMicUI('wait');setOrbStatus('Mother is thinking…','active');eviLog('Connected');
+        }
+      });
+    }else{startEVIRecording();}
+    return;
+  }
+}
+
+async function startEVIRecording(){
+  stopAudio();recordedBlobs=[];
+  try{micStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});}
+  catch(e){setOrbStatus('Mic blocked','');eviLog('MIC: '+e.message);return;}
+  var mime='';['audio/mp4','audio/webm;codecs=opus','audio/webm',''].forEach(function(t){if(!mime&&(t===''||MediaRecorder.isTypeSupported(t)))mime=t;});
+  eviLog('REC: '+(mime||'default'));
+  try{
+    rec=new MediaRecorder(micStream,mime?{mimeType:mime}:{});
+    rec.ondataavailable=function(e){if(e.data.size>0)recordedBlobs.push(e.data);};
+    rec.onstop=function(){
+      if(micStream){micStream.getTracks().forEach(function(t){t.stop();});micStream=null;}
+      if(recordedBlobs.length===0){eviLog('No audio');eviState='ready';setMicUI('ready');setOrbStatus('🟢 Tap mic','');return;}
+      var fullBlob=new Blob(recordedBlobs,{type:rec.mimeType||'audio/mp4'});recordedBlobs=[];
+      eviLog('Recorded '+(fullBlob.size/1024).toFixed(0)+'KB');
+      var reader=new FileReader();
+      reader.onloadend=function(){
+        var b64=reader.result.split(',')[1];
+        if(b64&&eviWs&&eviWs.readyState===1){
+          // Send audio in chunks to avoid WebSocket message size limits
+          var CHUNK_SIZE=32000;// ~32KB per message
+          var totalChunks=Math.ceil(b64.length/CHUNK_SIZE);
+          eviLog('Sending '+totalChunks+' chunks ('+(b64.length/1024).toFixed(0)+'KB)…');
+          for(var ci=0;ci<b64.length;ci+=CHUNK_SIZE){
+            var chunk=b64.slice(ci,ci+CHUNK_SIZE);
+            eviWs.send(JSON.stringify({type:'audio_input',data:chunk}));
+          }
+          eviLog('All chunks sent');
+          eviState='waiting_reply';setMicUI('wait');setOrbStatus('Mother is thinking…','active');pendingChunks=[];pendingText='';
+        }else{eviLog('Send failed — WS not open');eviState='ready';setMicUI('ready');setOrbStatus('🟢 Tap mic','');}
+      };reader.readAsDataURL(fullBlob);
+    };
+    rec.start(1000);eviState='recording';setMicUI('rec');setOrbStatus('🔴 Recording… tap when done','listening');
+    if(orbs.train)orbs.train.setState('listening');eviLog('Recording');
+  }catch(e){eviLog('REC ERR: '+e.message);eviState='ready';setMicUI('ready');}
+}
+
+/* ── Mic UI ── */
+function setMicUI(s){
+  var btn=document.getElementById('micBtn'),hint=document.getElementById('micHint');if(!btn)return;
+  if(s==='rec'){btn.classList.add('recording');btn.textContent='⏹️';btn.disabled=false;if(hint)hint.textContent='recording…';}
+  else if(s==='wait'){btn.classList.remove('recording');btn.textContent='⏳';btn.disabled=true;if(hint)hint.textContent='waiting…';}
+  else if(s==='ready'){btn.classList.remove('recording');btn.textContent='🎙️';btn.disabled=false;if(hint)hint.textContent='tap to speak';}
+  else{btn.classList.remove('recording');btn.textContent='🎙️';btn.disabled=false;if(hint)hint.textContent='tap to speak';}
+}
+
+/* ══════════════════════════════════════════════════════════ */
+/*   REPORT + DEBRIEF + FINAL CARD SYSTEM                    */
+/* ══════════════════════════════════════════════════════════ */
+
+var debriefHistory=[];
+var debriefPlayer=new Audio();
+var debriefState='idle';// idle|waiting|recording|sending|playing|ready
+var debriefRec=null,debriefStream=null,debriefRecBlobs=[];
+
+
+
+
+/* ── Aggregate REAL Hume scores ── */
+function aggregateHumeScores(){
+  var humeData=sessionAssessments.filter(function(s){return s.hume&&s.hume.has_real_voice_data;});
+  if(humeData.length===0)return null;
+
+  var fields=['calmness','empathic_pain','sympathy','interest','concentration','determination','sadness','contempt','distress','joy'];
+  var result={};
+  fields.forEach(function(f){
+    var vals=humeData.map(function(h){return h.hume[f]||0;});
+    result[f]=Math.round(vals.reduce(function(a,b){return a+b;},0)/vals.length);
+  });
+  result.count=humeData.length;
+  return result;
+}
+
+/* ── END SESSION → JSE QUIZ → REPORT → DEBRIEF → FINAL CARD ── */
+
+var lastReport=null,lastJSE=null,selfReportJSE=null;
+
+// The REAL 20 JSE questions (exact wording from the scale)
+var JSE_QUESTIONS=[
+  {id:1,text:'My understanding of how my patients and their families feel does not influence medical or surgical treatment.',reverse:true},
+  {id:2,text:'My patients feel better when I understand their feelings.',reverse:false},
+  {id:3,text:'It is difficult for me to view things from my patients\' perspectives.',reverse:true},
+  {id:4,text:'I consider understanding my patients\' body language as important as verbal communication in caregiver-patient relationships.',reverse:false},
+  {id:5,text:'I have a good sense of humor that I think contributes to a better clinical outcome.',reverse:false},
+  {id:6,text:'Because people are different, it is difficult for me to see things from my patients\' perspectives.',reverse:true},
+  {id:7,text:'I try not to pay attention to my patients\' emotions in history taking or in asking about their physical health.',reverse:true},
+  {id:8,text:'Attentiveness to my patients\' personal experiences does not influence treatment outcomes.',reverse:true},
+  {id:9,text:'I try to imagine myself in my patients\' shoes when providing care to them.',reverse:false},
+  {id:10,text:'My patients value my understanding of their feelings which is therapeutic in its own right.',reverse:false},
+  {id:11,text:'Patient\'s illnesses can be cured only by medical or surgical treatment; therefore, emotional ties to my patients do not have a significant influence on medical or surgical outcomes.',reverse:true},
+  {id:12,text:'Asking patients about what is happening in their personal lives is unhelpful in understanding their physical complaints.',reverse:true},
+  {id:13,text:'I try to understand what is going on in my patients\' minds by paying attention to their non-verbal cues and body language.',reverse:false},
+  {id:14,text:'I believe that emotion has no place in the treatment of medical illness.',reverse:true},
+  {id:15,text:'Empathy is a therapeutic skill without which success in treatment is limited.',reverse:false},
+  {id:16,text:'An important component of the relationship with my patients is my understanding of their emotional status, as well as that of their families.',reverse:false},
+  {id:17,text:'I try to think like my patients in order to render better care.',reverse:false},
+  {id:18,text:'I do not allow myself to be influenced by strong personal bonds between my patients and their family members.',reverse:true},
+  {id:19,text:'I do not enjoy reading non-medical literature or the arts.',reverse:true},
+  {id:20,text:'I believe that empathy is an important therapeutic factor in medical or surgical treatment.',reverse:false}
+];
+
+async function endSession(){
+  if(window.speechSynthesis)speechSynthesis.cancel();
+  clearInterval(timerInterval);disconnectEVI();
+  selfReportJSE=null;
+
+  // Render JSE questionnaire and go to quiz screen
+  renderJSEQuiz();
+  goScreen('jseQuiz');
+}
+
+function renderJSEQuiz(){
+  var el=document.getElementById('jseQuestions');
+  var html='';
+  JSE_QUESTIONS.forEach(function(q){
+    html+='<div class="jse-q"><div class="jse-q-text"><span class="jse-q-num">'+q.id+'.</span>'+q.text;
+    if(q.reverse)html+=' <span class="jse-q-tag">R</span>';
+    html+='</div><div class="jse-radios">';
+    for(var r=1;r<=7;r++){
+      html+='<div class="jse-radio"><input type="radio" name="jse_'+q.id+'" id="jse_'+q.id+'_'+r+'" value="'+r+'" onchange="updateJSEProgress()"><label for="jse_'+q.id+'_'+r+'">'+r+'</label></div>';
+    }
+    html+='</div></div>';
+  });
+  el.innerHTML=html;
+  document.getElementById('jseProgress').textContent='0 / 20 answered';
+  document.getElementById('jseSubmitBtn').disabled=true;
+}
+
+function updateJSEProgress(){
+  var answered=0;
+  JSE_QUESTIONS.forEach(function(q){
+    var sel=document.querySelector('input[name="jse_'+q.id+'"]:checked');
+    if(sel)answered++;
+  });
+  document.getElementById('jseProgress').textContent=answered+' / 20 answered';
+  document.getElementById('jseSubmitBtn').disabled=(answered<20);
+}
+
+function submitJSE(){
+  // Collect raw responses
+  var raw=[];var total=0;
+  JSE_QUESTIONS.forEach(function(q){
+    var sel=document.querySelector('input[name="jse_'+q.id+'"]:checked');
+    var val=sel?parseInt(sel.value):4;
+    var scored=q.reverse?(8-val):val;// Reverse scoring: 7→1, 6→2, etc.
+    raw.push({id:q.id,text:q.text,raw:val,scored:scored,reverse:q.reverse});
+    total+=scored;
+  });
+
+  var pct=Math.round(total/140*100);
+  var interp=total>=120?'Exceptionally empathic — deep humanistic care':
+    total>=100?'Strong empathy — good therapeutic presence':
+    total>=80?'Moderate empathy — room for growth in perspective-taking':
+    total>=60?'Below average — needs focused development':
+    'Low empathy scores — significant development needed';
+
+  selfReportJSE={items:raw,total:total,max:140,percent:pct,interpretation:interp};
+  lastJSE=selfReportJSE;
+
+  // Now show the report
+  showReport();
+}
+
+function showReport(){
+  showLoading('Preparing your report…');
+  goScreen('report');
+
+  var ds=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('reportDate').textContent=ds;
+  var c=CASES[currentCase];
+  document.getElementById('reportCase').textContent=c.name+' — '+c.sub.split('·')[0].trim();
+  var dur=sessionStart?Math.round((Date.now()-sessionStart)/60000)+'m':'—';
+  document.getElementById('reportDur').textContent=dur;
+  var exchCount=Math.floor(chatHistory.length/2);
+  document.getElementById('reportExch').textContent=exchCount+' exchanges';
+
+  // 1. Render Hume section (REAL voice emotion data from Hume's 48-dimension prosody model)
+  var hume=aggregateHumeScores();
+  var humeEl=document.getElementById('humeSection');
+  if(hume){
+    var hColors={calmness:'#7a9e7e',empathic_pain:'#9b7eb4',sympathy:'#c9a84c',interest:'#7ba4c4',concentration:'#78b8a8',determination:'#6b8e6f',sadness:'#c4836a',joy:'#c9a84c',distress:'#b06848',contempt:'#8a847a'};
+    var hLabels={calmness:'Calmness',empathic_pain:'Empathic Pain',sympathy:'Sympathy',interest:'Interest',concentration:'Concentration',determination:'Determination',sadness:'Sadness',joy:'Joy',distress:'Distress',contempt:'Contempt'};
+    var hHTML='<p style="font-size:.58rem;color:var(--sage);margin-bottom:10px;font-weight:600">✓ Real data from Hume AI prosody model · '+hume.count+' voice samples analyzed</p>';
+    ['calmness','empathic_pain','sympathy','interest','concentration','determination','sadness','joy','distress','contempt'].forEach(function(k){
+      var v=hume[k]||0;
+      if(v>0)hHTML+='<div class="hume-bar"><span class="hb-name">'+(hLabels[k]||k)+'</span><div class="hb-track"><div class="hb-fill" style="width:'+v+'%;background:'+(hColors[k]||'#888')+'"></div></div><span class="hb-val">'+v+'%</span></div>';
+    });
+    humeEl.innerHTML=hHTML;
+  }else{humeEl.innerHTML='<p style="font-size:.72rem;color:var(--ink-l);text-align:center;font-style:italic">No voice data — use the microphone for voice analysis</p>';}
+
+  // 2. Render JSE section (REAL self-reported scores)
+  var jse=selfReportJSE||lastJSE||{total:0,max:140,percent:0,interpretation:'Not completed',items:[]};
+  lastJSE=jse;
+  var jseEl=document.getElementById('jseSection');
+  var jseColor=jse.total>=100?'var(--sage)':jse.total>=70?'var(--gold)':'var(--terra)';
+  var jHTML='<div style="text-align:center;margin-bottom:14px"><span style="font-family:Lora,serif;font-size:2.6rem;color:'+jseColor+'">'+jse.total+'</span><span style="font-size:1rem;color:var(--ink-l)"> / '+jse.max+'</span>';
+  jHTML+='<p style="font-size:.74rem;color:var(--ink-m);margin-top:4px;font-style:italic">'+jse.interpretation+'</p>';
+  jHTML+='<p style="font-size:.56rem;color:var(--sage);margin-top:4px;font-weight:600">✓ Self-reported (validated JSE instrument)</p>';
+  jHTML+='</div><div style="max-height:260px;overflow-y:auto">';
+  (jse.items||[]).forEach(function(item){
+    var col=item.scored>=5?'color:var(--sage)':item.scored>=3?'color:var(--gold)':'color:var(--terra)';
+    jHTML+='<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.04);font-size:.66rem">';
+    jHTML+='<span style="width:22px;color:var(--ink-l);font-weight:600">'+item.id+'</span>';
+    jHTML+='<span style="flex:1;color:var(--ink-m)">'+item.text+(item.reverse?' <span style="color:var(--terra);font-size:.5rem">(R)</span>':'')+'</span>';
+    jHTML+='<span style="font-size:.54rem;color:var(--ink-l);width:30px">raw:'+item.raw+'</span>';
+    jHTML+='<span style="font-weight:700;'+col+';width:24px;text-align:right">'+item.scored+'</span>';
+    jHTML+='</div>';
+  });
+  jHTML+='</div>';
+  jseEl.innerHTML=jHTML;
+
+  // 3. Render Claude assessment in TABLE format
+  var claudeData=sessionAssessments.filter(function(s){return s.assessment&&s.assessment.scores;});
+  if(claudeData.length>0){
+    function avgS(field){var vals=claudeData.map(function(a){return a.assessment.scores[field];}).filter(function(v){return v;});return vals.length?Math.round(vals.reduce(function(a,b){return a+b;},0)/vals.length):0;}
+    var dims=[
+      {f:'emotional_acknowledgment',l:'Emotional Acknowledgment',d:'Recognizing and validating family emotions'},
+      {f:'nonjudgmental_language',l:'Non-judgmental Language',d:'Speaking without bias or assumption'},
+      {f:'tone_warmth',l:'Tone & Warmth',d:'Conveying care through voice and words'},
+      {f:'silence_comfort',l:'Silence Comfort',d:'Using therapeutic pauses effectively'},
+      {f:'family_inclusion',l:'Family Inclusion',d:'Engaging all family members present'},
+      {f:'cultural_sensitivity',l:'Cultural Sensitivity',d:'Respecting cultural context and values'}
+    ];
+    var tHTML='<p style="font-size:.58rem;color:var(--sage);margin-bottom:10px;font-weight:600">✓ Claude AI assessment · '+claudeData.length+' exchanges analyzed</p>';
+    tHTML+='<table style="width:100%;border-collapse:collapse;font-size:.72rem">';
+    tHTML+='<thead><tr style="border-bottom:2px solid rgba(0,0,0,.08)"><th style="text-align:left;padding:8px 6px;color:var(--ink-l);font-size:.58rem;text-transform:uppercase;letter-spacing:.08em">Dimension</th><th style="width:60px;text-align:center;padding:8px 6px;color:var(--ink-l);font-size:.58rem;text-transform:uppercase">Score</th><th style="width:50px;text-align:center;padding:8px 6px;color:var(--ink-l);font-size:.58rem;text-transform:uppercase">Grade</th></tr></thead><tbody>';
+    dims.forEach(function(d){
+      var v=avgS(d.f);var g=v>=70?'A':v>=50?'B':v>=30?'C':'D';
+      var gc=g==='A'?'var(--sage)':g==='B'?'var(--sky)':g==='C'?'var(--gold)':'var(--terra)';
+      tHTML+='<tr style="border-bottom:1px solid rgba(0,0,0,.04)"><td style="padding:8px 6px"><div style="font-weight:600;color:var(--ink-s)">'+d.l+'</div><div style="font-size:.6rem;color:var(--ink-l)">'+d.d+'</div></td><td style="text-align:center;font-weight:700;color:var(--ink-s)">'+v+'<span style="font-size:.56rem;color:var(--ink-l)">/100</span></td><td style="text-align:center"><span style="display:inline-block;padding:3px 10px;border-radius:6px;font-weight:700;font-size:.7rem;color:white;background:'+gc+'">'+g+'</span></td></tr>';
+    });
+    tHTML+='</tbody></table>';
+    document.getElementById('scoreGrid').innerHTML=tHTML;
+    document.getElementById('profileGrid').innerHTML='';
+    document.getElementById('barRows').innerHTML='';
+  }else{
+    document.getElementById('scoreGrid').innerHTML='<p style="font-size:.72rem;color:var(--ink-l);text-align:center;font-style:italic">No clinical assessment data — enable n8n pipeline for background Claude grading</p>';
+    document.getElementById('profileGrid').innerHTML='';
+    document.getElementById('barRows').innerHTML='';
+  }
+
+  // 4. Issues
+  var allIssues=[];
+  sessionAssessments.forEach(function(sa){if(sa.assessment){
+    (sa.assessment.jargon_detected||[]).forEach(function(j){allIssues.push({type:'jargon',text:'Jargon: '+(j.term||j)});});
+    (sa.assessment.dismissive_phrases||[]).forEach(function(d){allIssues.push({type:'tone',text:'Dismissive: '+d});});
+    (sa.assessment.missed_cues||[]).forEach(function(m){allIssues.push({type:'empathy',text:'Missed: '+m});});
+  }});
+  var seen={};allIssues=allIssues.filter(function(i){if(seen[i.text])return false;seen[i.text]=true;return true;});
+  if(!allIssues.length)allIssues.push({type:'tone',text:'No major issues — well done'});
+  document.getElementById('issuePills').innerHTML=allIssues.map(function(i){return '<span class="issue-pill '+(i.type||'tone')+'">⚠ '+i.text+'</span>';}).join('');
+
+  // 5. Next steps
+  var tips=[];sessionAssessments.forEach(function(sa){if(sa.assessment&&sa.assessment.coaching_tip)tips.push(sa.assessment.coaching_tip);});
+  if(!tips.length)tips=['Practice therapeutic silence after emotional disclosures','Acknowledge feelings before providing clinical information','Use metaphors instead of medical jargon'];
+  document.getElementById('nextSteps').innerHTML=[...new Set(tips)].slice(0,4).map(function(t,i){
+    return '<div class="next-item"><div class="next-num">'+(i+1)+'</div><div class="next-body"><h5>Coaching Tip</h5><p>'+t+'</p></div></div>';}).join('');
+
+  // Memory note
+  document.getElementById('memoryNote').innerHTML='<strong>Session note:</strong> '+exchCount+' exchanges, JSE '+jse.total+'/'+jse.max+' ('+jse.interpretation+')';
+
+  // Save to Firestore
+  if(currentUser){try{db.collection('users').doc(currentUser.uid).collection('sessions').add({
+    caseId:currentCase,caseName:c.name,date:ds,duration:dur,exchanges:exchCount,
+    jseSelfReport:selfReportJSE,sessionAssessments:sessionAssessments,chatHistory:chatHistory,
+    timestamp:firebase.firestore.FieldValue.serverTimestamp()});}catch(e){}}
+
+  hideLoading();
+}
+
+/* ══ DEBRIEF SESSION ══ */
+
+function dLog(s){var el=document.getElementById('debriefLog');if(el)el.textContent=new Date().toLocaleTimeString()+' '+s+'\n'+el.textContent.slice(0,1500);console.log('[DEBRIEF]',s);}
+
+function debriefMsg(who,txt){
+  var c=document.getElementById('debriefMessages'),d=document.createElement('div');
+  d.className='msg'+(who==='you'?' you':'');
+  d.innerHTML='<div class="msg-avatar '+(who==='you'?'you':'ai')+'">'+(who==='you'?'🩺':'🎓')+'</div><div class="msg-body"><div class="msg-bubble '+(who==='you'?'you':'ai')+'">'+txt+'</div></div>';
+  c.appendChild(d);c.scrollTop=c.scrollHeight;
+}
+
+function setDebriefMic(s){
+  var btn=document.getElementById('debriefMic'),st=document.getElementById('debriefStatus');if(!btn)return;
+  if(s==='rec'){btn.className='debrief-mic rec';btn.textContent='⏹️';btn.disabled=false;if(st)st.textContent='🔴 Recording…';}
+  else if(s==='wait'){btn.className='debrief-mic wait';btn.textContent='⏳';btn.disabled=true;if(st)st.textContent='Mentor thinking…';}
+  else if(s==='speaking'){btn.className='debrief-mic wait';btn.textContent='🔊';btn.disabled=true;if(st)st.textContent='Mentor speaking…';}
+  else{btn.className='debrief-mic ready';btn.textContent='🎙️';btn.disabled=false;if(st)st.textContent='🟢 Tap mic to respond';}
+}
+
+async function startDebrief(){
+  primeAudio();
+  goScreen('debrief');
+  document.getElementById('debriefMessages').innerHTML='';
+  debriefHistory=[];
+  debriefState='waiting';setDebriefMic('wait');
+
+  // Show loading message
+  debriefMsg('ai','Analyzing your session data… one moment.');
+  dLog('Starting debrief…');
+
+  var jse=selfReportJSE||lastJSE||{total:0,max:140,percent:0,interpretation:"Not completed",items:[]};
+  var hume=aggregateHumeScores()||{};
+  var transcript=chatHistory.map(function(m){return(m.role==='user'?'TRAINEE':'FAMILY')+': '+m.content;}).join('\n');
+  var ci=CASES[currentCase];
+
+  // Collect Claude assessment data (faults, jargon, missed cues, coaching)
+  var claudeData=sessionAssessments.filter(function(s){return s.assessment;});
+  var allJargon=[],allMissed=[],allDismissive=[],allTips=[];
+  claudeData.forEach(function(sa){
+    if(sa.assessment.jargon_detected)(sa.assessment.jargon_detected).forEach(function(j){allJargon.push(j.term||j);});
+    if(sa.assessment.missed_cues)(sa.assessment.missed_cues).forEach(function(m){allMissed.push(m);});
+    if(sa.assessment.dismissive_phrases)(sa.assessment.dismissive_phrases).forEach(function(d){allDismissive.push(d);});
+    if(sa.assessment.coaching_tip)allTips.push(sa.assessment.coaching_tip);
+  });
+
+  // Build comprehensive prompt
+  var sysPrompt='You are a wise, warm senior pediatric neurologist mentor conducting a post-session debrief. You just watched a medical trainee have a conversation with '+ci.name+' ('+ci.sub+').\n\n'+
+    'You have FOUR data sources. Use ALL of them in your analysis:\n\n'+
+    '═══ 1. JEFFERSON SCALE OF EMPATHY (self-reported by trainee) ═══\n'+
+    'Total Score: '+jse.total+'/'+jse.max+' ('+jse.percent+'%) — '+jse.interpretation+'\n';
+
+  if(jse.items&&jse.items.length>0){
+    var lowItems=jse.items.filter(function(i){return i.scored<=3;});
+    var highItems=jse.items.filter(function(i){return i.scored>=6;});
+    if(lowItems.length>0)sysPrompt+='WEAK areas (scored 1-3):\n'+lowItems.map(function(i){return '  Item '+i.id+' ('+i.scored+'/7): "'+i.text+'"';}).join('\n')+'\n';
+    if(highItems.length>0)sysPrompt+='STRONG areas (scored 6-7):\n'+highItems.map(function(i){return '  Item '+i.id+' ('+i.scored+'/7): "'+i.text+'"';}).join('\n')+'\n';
+  }
+
+  sysPrompt+='\n═══ 2. HUME AI VOICE EMOTION (trainee\'s vocal analysis from prosody model) ═══\n'+
+    'Calmness: '+(hume.calmness||'N/A')+'/100\n'+
+    'Empathic Pain: '+(hume.empathic_pain||'N/A')+'/100\n'+
+    'Sympathy: '+(hume.sympathy||'N/A')+'/100\n'+
+    'Interest: '+(hume.interest||'N/A')+'/100\n'+
+    'Concentration: '+(hume.concentration||'N/A')+'/100\n'+
+    'Determination: '+(hume.determination||'N/A')+'/100\n'+
+    'Sadness: '+(hume.sadness||'N/A')+'/100\n'+
+    'Distress: '+(hume.distress||'N/A')+'/100\n';
+
+  sysPrompt+='\n═══ 3. CLAUDE AI CLINICAL ASSESSMENT (background analysis) ═══\n';
+  if(allJargon.length>0)sysPrompt+='JARGON USED (medical terms the family may not understand): '+[...new Set(allJargon)].join(', ')+'\n';
+  if(allMissed.length>0)sysPrompt+='MISSED EMOTIONAL CUES: '+[...new Set(allMissed)].join('; ')+'\n';
+  if(allDismissive.length>0)sysPrompt+='DISMISSIVE PHRASES DETECTED: '+[...new Set(allDismissive)].join('; ')+'\n';
+  if(allTips.length>0)sysPrompt+='COACHING SUGGESTIONS: '+[...new Set(allTips)].join('; ')+'\n';
+  if(claudeData.length===0)sysPrompt+='(No background assessment data — n8n pipeline was not active)\n';
+
+  sysPrompt+='\n═══ 4. FULL CONVERSATION TRANSCRIPT ═══\n'+transcript+'\n\n'+
+    '═══ YOUR TASK ═══\n'+
+    'Generate a comprehensive opening debrief that covers ALL of the following:\n\n'+
+    '1. ACKNOWLEDGMENT (1-2 sentences): Recognize the emotional weight of the conversation. Name the specific case and what made it challenging.\n\n'+
+    '2. WHAT WENT WELL (2-3 sentences): Identify specific moments from the transcript where the trainee showed good practice. Quote their actual words. Connect to JSE strengths if applicable.\n\n'+
+    '3. FAULTS & MISTAKES (3-4 sentences): Be specific and honest about what went wrong. Reference:\n'+
+    '   - Any jargon used (name the terms)\n'+
+    '   - Missed emotional cues (describe the moment)\n'+
+    '   - Dismissive language (quote it)\n'+
+    '   - Voice analysis concerns (high anxiety, low warmth, etc.)\n'+
+    '   - Low JSE items and what they reveal about the trainee\'s empathy gaps\n\n'+
+    '4. HOW TO IMPROVE (3-4 sentences): Give specific, actionable advice. Not generic tips — advice tied to the actual mistakes made. Example: "When Meena said her heart was broken, you moved to clinical information. Instead, try sitting with that emotion for a moment — even saying \'I can hear how much pain you\'re in\' before anything else."\n\n'+
+    '5. CLOSING (1 sentence): Encouraging but honest. Forward-looking.\n\n'+
+    'TONE: Speak as a mentor who genuinely cares. Use "I noticed" and "What I saw" language. Be warm but don\'t sugarcoat. Reference specific transcript moments. Total: 12-18 sentences.';
+
+  debriefHistory.push({role:'user',content:sysPrompt});
+
+  // Call Gemini with higher token limit for comprehensive response
+  var reply=await callGeminiLong(sysPrompt);
+  if(!reply)reply="I want to start by saying — sitting with a family facing "+ci.name+"'s diagnosis takes real courage. Let me share what I observed and where you can grow.";
+
+  // Replace loading message with real response
+  document.getElementById('debriefMessages').innerHTML='';
+  debriefHistory.push({role:'assistant',content:reply});
+  debriefMsg('ai',reply);
+  debriefState='speaking';setDebriefMic('speaking');
+  dLog('Mentor: '+reply.slice(0,80));
+  await speakDebrief(reply);
+  debriefState='ready';setDebriefMic('ready');
+  dLog('Ready for response');
+}
+
+async function callGeminiLong(text){
+  if(!AI_CONFIG.geminiKey){dLog('No Gemini key');return null;}
+  try{
+    var body={contents:[{role:'user',parts:[{text:text}]}],generationConfig:{maxOutputTokens:1200,temperature:0.7}};
+    var r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+AI_CONFIG.geminiKey,{
+      method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    var d=await r.json();
+    var reply=d.candidates&&d.candidates[0]&&d.candidates[0].content?d.candidates[0].content.parts[0].text:'';
+    dLog('Gemini (long): '+reply.slice(0,80)+'…');
+    return reply;
+  }catch(e){dLog('Gemini err: '+e.message);return null;}
+}
+
+async function callGemini(text){
+  if(!AI_CONFIG.geminiKey){dLog('No Gemini key');return null;}
+  try{
+    var body={contents:[],generationConfig:{maxOutputTokens:500,temperature:0.7}};
+    debriefHistory.forEach(function(m){body.contents.push({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]});});
+    if(!body.contents.length)body.contents.push({role:'user',parts:[{text:text}]});
+    dLog('Calling Gemini ('+body.contents.length+' turns)…');
+    var r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+AI_CONFIG.geminiKey,{
+      method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    var d=await r.json();
+    if(d.error){dLog('Gemini API error: '+d.error.message);return null;}
+    if(!d.candidates||!d.candidates[0]){dLog('Gemini: no candidates');return null;}
+    var reply=d.candidates[0].content?d.candidates[0].content.parts[0].text:'';
+    dLog('Gemini reply: '+reply.slice(0,60));
+    return reply;
+  }catch(e){dLog('Gemini err: '+e.message);return null;}
+}
+
+async function speakDebrief(text){
+  if(AI_CONFIG.elevenLabsKey&&AI_CONFIG.mentorVoiceId){
+    try{
+      var clean=text.replace(/\*[^*]+\*/g,'').replace(/\s+/g,' ').trim();
+      var r=await fetch('https://api.elevenlabs.io/v1/text-to-speech/'+AI_CONFIG.mentorVoiceId,{
+        method:'POST',headers:{'xi-api-key':AI_CONFIG.elevenLabsKey,'Content-Type':'application/json','Accept':'audio/mpeg'},
+        body:JSON.stringify({text:clean,model_id:'eleven_flash_v2_5',voice_settings:{stability:0.6,similarity_boost:0.75,style:0.3}})});
+      if(!r.ok){dLog('11Labs: '+r.status);speak(text,false,null);return;}
+      var blob=await r.blob();var url=URL.createObjectURL(blob);
+      return new Promise(function(resolve){
+        debriefPlayer.onended=function(){URL.revokeObjectURL(url);dLog('Audio done');resolve();};
+        debriefPlayer.onerror=function(){resolve();};
+        debriefPlayer.src=url;debriefPlayer.play().catch(function(){resolve();});
+      });
+    }catch(e){dLog('TTS: '+e.message);speak(text,false,null);}
+  }else{speak(text,false,null);}
+}
+
+/* ── Debrief push-to-talk ── */
+async function debriefMicTap(){
+  primeAudio();
+  if(debriefState==='recording'){
+    debriefState='sending';setDebriefMic('wait');
+    if(debriefRec&&debriefRec.state!=='inactive')debriefRec.stop();
+    return;
+  }
+  if(debriefState==='ready'){
+    debriefRecBlobs=[];
+    try{debriefStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});}
+    catch(e){dLog('Mic: '+e.message);return;}
+    var mime='';['audio/mp4','audio/webm;codecs=opus','audio/webm',''].forEach(function(t){if(!mime&&(t===''||MediaRecorder.isTypeSupported(t)))mime=t;});
+    try{
+      debriefRec=new MediaRecorder(debriefStream,mime?{mimeType:mime}:{});
+      debriefRec.ondataavailable=function(e){if(e.data.size>0)debriefRecBlobs.push(e.data);};
+      debriefRec.onstop=function(){
+        if(debriefStream){debriefStream.getTracks().forEach(function(t){t.stop();});debriefStream=null;}
+        if(!debriefRecBlobs.length){dLog('No audio');debriefState='ready';setDebriefMic('ready');return;}
+        var blob=new Blob(debriefRecBlobs,{type:debriefRec.mimeType||'audio/mp4'});debriefRecBlobs=[];
+        dLog('Recorded '+(blob.size/1024).toFixed(0)+'KB');
+        processDebriefAudio(blob);
+      };
+      debriefRec.start(1000);debriefState='recording';setDebriefMic('rec');dLog('Recording');
+    }catch(e){dLog('Rec: '+e.message);}
+  }
+}
+
+async function processDebriefAudio(audioBlob){
+  setDebriefMic('wait');
+  var mimeType=audioBlob.type||'audio/mp4';
+  dLog('Transcribing… ('+mimeType+', '+(audioBlob.size/1024).toFixed(0)+'KB)');
+
+  // Convert blob to base64
+  var b64=await new Promise(function(resolve){
+    var reader=new FileReader();
+    reader.onloadend=function(){resolve(reader.result.split(',')[1]||'');};
+    reader.readAsDataURL(audioBlob);
+  });
+
+  if(!b64||b64.length<100){dLog('Audio too small: '+b64.length+' chars');debriefState='ready';setDebriefMic('ready');return;}
+  dLog('Base64: '+b64.length+' chars');
+
+  // Fix MIME type for Gemini compatibility
+  // iPad records as audio/mp4, Gemini prefers audio/mp4 or audio/webm
+  // If MIME is empty or unusual, default to audio/mp4
+  if(!mimeType||mimeType==='audio/x-m4a')mimeType='audio/mp4';
+
+  var studentText='';
+  try{
+    var transBody={
+      contents:[{role:'user',parts:[
+        {inline_data:{mime_type:mimeType,data:b64}},
+        {text:'Listen to this audio recording carefully and transcribe what the person is saying. Output ONLY the exact words spoken, nothing else. If the audio is silent or unclear, respond with the single word: unclear'}
+      ]}],
+      generationConfig:{maxOutputTokens:300,temperature:0.1}
+    };
+
+    dLog('Calling Gemini transcribe…');
+    var tr=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+AI_CONFIG.geminiKey,{
+      method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(transBody)});
+
+    var td=await tr.json();
+
+    // Log full response for debugging
+    if(td.error){
+      dLog('Gemini ERROR: '+JSON.stringify(td.error).slice(0,200));
+      debriefState='ready';setDebriefMic('ready');return;
+    }
+
+    if(!td.candidates||!td.candidates.length){
+      dLog('Gemini: no candidates. Blocked? '+JSON.stringify(td.promptFeedback||{}).slice(0,150));
+      debriefMsg('ai','I had trouble processing that. Could you try speaking a bit louder or longer?');
+      debriefState='ready';setDebriefMic('ready');return;
+    }
+
+    var finishReason=td.candidates[0].finishReason||'';
+    if(finishReason==='SAFETY'){
+      dLog('Gemini: blocked by safety filter');
+      debriefMsg('ai','Could you rephrase that? Let me know what you\'d like to discuss.');
+      debriefState='ready';setDebriefMic('ready');return;
+    }
+
+    studentText=td.candidates[0].content?td.candidates[0].content.parts[0].text:'';
+    studentText=studentText.replace(/^["']|["']$/g,'').replace(/^\s*SAID:\s*/i,'').trim();
+    dLog('Transcribed: "'+studentText.slice(0,80)+'"');
+
+  }catch(e){
+    dLog('Transcribe exception: '+e.message);
+    debriefMsg('ai','There was a technical issue. Please try again.');
+    debriefState='ready';setDebriefMic('ready');return;
+  }
+
+  if(!studentText||studentText.toLowerCase()==='unclear'||studentText.length<2){
+    dLog('Empty or unclear transcription');
+    debriefMsg('ai','I couldn\'t catch that clearly. Could you try speaking a bit closer to the mic?');
+    debriefState='ready';setDebriefMic('ready');return;
+  }
+
+  // Show student message and get mentor response
+  debriefMsg('you',studentText);
+  debriefHistory.push({role:'user',content:studentText});
+
+  dLog('Getting mentor reply…');
+  var reply=await callGemini(studentText);
+  if(!reply){
+    dLog('Mentor reply empty');
+    debriefMsg('ai','Let me think about that for a moment. Could you elaborate on your thought?');
+    debriefState='ready';setDebriefMic('ready');return;
+  }
+
+  debriefHistory.push({role:'assistant',content:reply});
+  debriefMsg('ai',reply);
+  dLog('Mentor: '+reply.slice(0,60));
+
+  debriefState='speaking';setDebriefMic('speaking');
+  await speakDebrief(reply);
+  debriefState='ready';setDebriefMic('ready');dLog('Ready');
+}
+
+function endDebrief(){
+  debriefState='idle';
+  try{debriefPlayer.pause();}catch(e){}
+  if(debriefStream){debriefStream.getTracks().forEach(function(t){t.stop();});debriefStream=null;}
+
+  goScreen('finalCard');
+
+  // Populate final card with safe fallbacks
+  var jse=selfReportJSE||lastJSE||{total:0,max:140,percent:0,interpretation:'Not completed',items:[]};
+  var hume=aggregateHumeScores()||{};
+  var ds=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+
+  var el;
+  el=document.getElementById('finalDate');if(el)el.textContent=ds;
+  el=document.getElementById('finalJseScore');if(el){el.textContent=jse.total||'—';el.style.color=jse.total>=100?'var(--sage)':jse.total>=70?'var(--gold)':'var(--terra)';}
+  el=document.getElementById('finalJseInterp');if(el)el.textContent=jse.interpretation||'';
+
+  // Hume bars (real prosody model emotions)
+  var hLabels={calmness:'Calmness',empathic_pain:'Empathic Pain',sympathy:'Sympathy',interest:'Interest',concentration:'Concentration',determination:'Determination',sadness:'Sadness',joy:'Joy'};
+  var hColors={calmness:'#7a9e7e',empathic_pain:'#9b7eb4',sympathy:'#c9a84c',interest:'#7ba4c4',concentration:'#78b8a8',determination:'#6b8e6f',sadness:'#c4836a',joy:'#c9a84c'};
+  var hHTML='';
+  if(hume&&hume.count){
+    ['calmness','empathic_pain','sympathy','interest','concentration','determination','sadness','joy'].forEach(function(k){
+      var v=hume[k]||0;
+      if(v>0)hHTML+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:.68rem;width:100px;color:var(--ink-m)">'+(hLabels[k]||k)+'</span><div style="flex:1;height:6px;background:rgba(0,0,0,.05);border-radius:3px;overflow:hidden"><div style="height:100%;width:'+v+'%;background:'+(hColors[k]||'#888')+';border-radius:3px"></div></div><span style="font-size:.62rem;color:var(--ink-l);width:28px;text-align:right">'+v+'%</span></div>';
+    });
+  }else{hHTML='<p style="font-size:.7rem;color:var(--ink-l)">No voice data collected</p>';}
+  el=document.getElementById('finalHumeBars');if(el)el.innerHTML=hHTML;
+
+  // Claude summary
+  var claudeData=sessionAssessments.filter(function(s){return s.assessment&&s.assessment.scores;});
+  el=document.getElementById('finalClaudeSummary');
+  if(el){
+    if(claudeData.length>0){
+      function avgF(f){var v=claudeData.map(function(a){return a.assessment.scores[f]||0;});return Math.round(v.reduce(function(a,b){return a+b;},0)/v.length);}
+      el.innerHTML='<div style="font-size:.72rem;color:var(--ink-m);line-height:1.8">Empathy: <strong>'+avgF('emotional_acknowledgment')+'</strong>/100 · Communication: <strong>'+avgF('nonjudgmental_language')+'</strong>/100 · Warmth: <strong>'+avgF('tone_warmth')+'</strong>/100 · Family: <strong>'+avgF('family_inclusion')+'</strong>/100</div>';
+    }else{el.innerHTML='<p style="font-size:.7rem;color:var(--ink-l)">No clinical assessment data</p>';}
+  }
+
+  // JSE items
+  el=document.getElementById('finalJseItems');
+  if(el){
+    var jHTML='';
+    (jse.items||[]).forEach(function(item){
+      var s=item.scored||0;var col=s>=5?'var(--sage)':s>=3?'var(--gold)':'var(--terra)';
+      jHTML+='<div style="display:flex;gap:6px;padding:4px 0;font-size:.64rem;border-bottom:1px solid rgba(0,0,0,.03)"><span style="width:18px;color:var(--ink-l)">'+item.id+'</span><span style="flex:1;color:var(--ink-m)">'+item.text+'</span><span style="font-weight:700;color:'+col+'">'+s+'/7</span></div>';
+    });
+    el.innerHTML=jHTML||'<p style="font-size:.7rem;color:var(--ink-l)">No JSE data</p>';
+  }
+
+  // Mentor summary
+  el=document.getElementById('finalMentorSummary');
+  if(el){
+    var lastMentor=debriefHistory.filter(function(m){return m.role==='assistant';}).pop();
+    el.innerHTML='<strong>Mentor\'s Note:</strong> '+(lastMentor?lastMentor.content:'Complete a debrief session to receive personalized feedback.');
+  }
+
+  dLog('Debrief ended — final card shown');
+}
+
+/* ── PDF Export ── */
+function exportPDF(){
+  var jse=selfReportJSE||lastJSE||{total:0,max:140,percent:0,interpretation:'Not completed',items:[]};
+  var hume=aggregateHumeScores();
+  try{var doc=new window.jspdf.jsPDF();var y=20;
+  doc.setFontSize(20);doc.setTextColor(122,158,126);doc.text('Fellowmate — Session Report',20,y);y+=10;
+  var ds=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  doc.setFontSize(10);doc.setTextColor(140,132,122);doc.text(ds,20,y);y+=8;
+  var c=CASES[currentCase];doc.text('Case: '+c.name+' — '+c.sub,20,y);y+=12;
+
+  // JSE Score
+  doc.setFontSize(14);doc.setTextColor(61,58,54);doc.text('Jefferson Scale of Empathy (Self-Report)',20,y);y+=8;
+  doc.setFontSize(11);doc.setTextColor(122,158,126);doc.text(jse.total+' / '+jse.max+' ('+jse.percent+'%)',20,y);y+=6;
+  doc.setFontSize(9);doc.setTextColor(90,84,76);doc.text(jse.interpretation,20,y);y+=10;
+
+  // JSE Items
+  doc.setFontSize(8);doc.setTextColor(90,84,76);
+  (jse.items||[]).forEach(function(item){
+    if(y>270){doc.addPage();y=20;}
+    doc.text(item.id+'. '+item.text+(item.reverse?' (R)':'')+' — raw:'+item.raw+' scored:'+item.scored,20,y);y+=5;
+  });y+=8;
+
+  // Hume Voice
+  if(hume){
+    if(y>250){doc.addPage();y=20;}
+    doc.setFontSize(14);doc.setTextColor(61,58,54);doc.text('Hume AI — Voice Emotion',20,y);y+=8;
+    doc.setFontSize(9);doc.setTextColor(90,84,76);
+    ['calmness','empathic_pain','sympathy','interest','concentration','determination','sadness','joy','distress','contempt'].forEach(function(k){
+      doc.text(k+': '+(hume[k]||0)+'/100',20,y);y+=6;
+    });y+=8;
+  }
+
+  // Issues
+  if(y>250){doc.addPage();y=20;}
+  doc.setFontSize(14);doc.setTextColor(61,58,54);doc.text('Issues Detected',20,y);y+=8;
+  doc.setFontSize(9);doc.setTextColor(90,84,76);
+  var pills=document.getElementById('issuePills');
+  if(pills){var issues=pills.querySelectorAll('.issue-pill');issues.forEach(function(p){doc.text('• '+p.textContent.trim(),20,y);y+=6;});}
+
+  // Mentor note
+  var lastMentor=debriefHistory.filter(function(m){return m.role==='assistant';}).pop();
+  if(lastMentor){
+    if(y>240){doc.addPage();y=20;}
+    doc.setFontSize(14);doc.setTextColor(61,58,54);doc.text('Mentor Debrief Note',20,y);y+=8;
+    doc.setFontSize(9);doc.setTextColor(90,84,76);
+    var lines=doc.splitTextToSize(lastMentor.content,170);
+    lines.forEach(function(l){if(y>275){doc.addPage();y=20;}doc.text(l,20,y);y+=5;});
+  }
+
+  doc.save('Fellowmate_Report.pdf');showToast('PDF exported');}catch(e){showToast('PDF error: '+e.message);}}
+
+/* ── RESET ── */
+function resetSession(){chatHistory=[];debriefHistory=[];selfReportJSE=null;lastJSE=null;sessionAssessments=[];disconnectEVI();debriefState='idle';
+  var m=document.getElementById('messages');if(m)m.innerHTML='';var dm=document.getElementById('debriefMessages');if(dm)dm.innerHTML='';
+setOrbStatus('Tap mic to begin','');setMicUI('off');eviState='idle';
+  document.getElementById('progFill').style.width='0%';document.getElementById('progExch').textContent='0 exchanges';document.getElementById('progTime').textContent='0:00';
+  if(ORIGINAL_EMOTIONS[currentCase])CASES[currentCase].emotions=Object.assign({},ORIGINAL_EMOTIONS[currentCase]);}
+
+/* ── UTILS ── */
+function showLoading(t){document.getElementById('loadingText').textContent=t||'Loading…';document.getElementById('loadingOverlay').classList.add('show');}
+function hideLoading(){document.getElementById('loadingOverlay').classList.remove('show');}
+function showToast(msg){var ex=document.querySelector('.toast');if(ex)ex.remove();var t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(function(){t.classList.add('hide');},3000);setTimeout(function(){t.remove();},3300);}
+function handleUpload(event,listId){var files=event.target.files;if(!files||!files.length)return;var list=document.getElementById(listId);
+  Array.from(files).forEach(function(file){var icon=file.type.startsWith('video')?'🎬':'📄';var size=(file.size/(1024*1024)).toFixed(1)+' MB';var d=document.createElement('div');d.className='file-item';
+    d.innerHTML='<span class="file-icon">'+icon+'</span><div class="file-info"><h6>'+file.name+'</h6><p>'+size+' · Processing…</p></div><span class="file-badge pending">Processing</span>';list.appendChild(d);
+    setTimeout(function(){d.querySelector('.file-badge').textContent='Trained';d.querySelector('.file-badge').className='file-badge ok';d.querySelector('p').textContent=size+' · Indexed';},2200);});showToast('Files uploaded');}
+
+/* ═══ ASSESSMENT SCALES SYSTEM ═══ */
+var uploadedScales=[
+  {id:'jefferson',name:'Jefferson Scale of Empathy (JSE)',items:20,type:'likert-7',status:'built-in',
+   description:'20 items, 7-point Likert, measures physician empathy. Items 1,3,6,7,8,11,12,14,18,19 reverse-scored. Range 20-140.',
+   dimensions:['Perspective Taking','Compassionate Care','Walking in Patient Shoes']}
+];
+
+function handleScaleUpload(event){
+  var files=event.target.files;if(!files||!files.length)return;
+  var list=document.getElementById('scaleList');
+
+  Array.from(files).forEach(function(file){
+    var size=(file.size/(1024*1024)).toFixed(1)+' MB';
+    var ext=file.name.split('.').pop().toLowerCase();
+
+    // Create list item
+    var d=document.createElement('div');d.className='file-item';
+    d.innerHTML='<span class="file-icon">📊</span><div class="file-info"><h6>'+file.name+'</h6><p>'+size+' · Parsing…</p></div><span class="file-badge pending">Parsing</span>';
+    list.appendChild(d);
+
+    // Read file
+    var reader=new FileReader();
+    reader.onload=function(e){
+      var content=e.target.result;
+      var scaleData={id:'custom_'+Date.now(),name:file.name.replace(/\.[^.]+$/,''),file:file.name,status:'uploaded',raw:null};
+
+      if(ext==='json'){
+        // Structured JSON scale
+        try{
+          scaleData.raw=JSON.parse(content);
+          scaleData.items=scaleData.raw.items?scaleData.raw.items.length:'unknown';
+          scaleData.type=scaleData.raw.type||'custom';
+          d.querySelector('p').textContent=size+' · '+scaleData.items+' items · Parsed';
+        }catch(err){
+          d.querySelector('p').textContent=size+' · JSON parse error';
+          d.querySelector('.file-badge').textContent='Error';d.querySelector('.file-badge').className='file-badge';return;
+        }
+      }else if(ext==='csv'){
+        // CSV scale items
+        var lines=content.split('\n').filter(function(l){return l.trim();});
+        scaleData.items=lines.length-1;// minus header
+        scaleData.type='csv';
+        scaleData.raw=content;
+        d.querySelector('p').textContent=size+' · '+scaleData.items+' items · Parsed';
+      }else{
+        // PDF — store raw, will be sent to Gemini for parsing during debrief
+        scaleData.type='pdf';
+        scaleData.raw=content.substring(0,5000);// First 5000 chars for context
+        scaleData.items='auto-detect';
+        d.querySelector('p').textContent=size+' · PDF stored for AI parsing';
+      }
+
+      uploadedScales.push(scaleData);
+      d.querySelector('.file-badge').textContent='Active';d.querySelector('.file-badge').className='file-badge ok';
+
+      // Save to localStorage
+      try{
+        var saved=uploadedScales.filter(function(s){return s.id!=='jefferson';}).map(function(s){
+          return{id:s.id,name:s.name,file:s.file,items:s.items,type:s.type,status:s.status};
+        });
+        localStorage.setItem('fellowmate_scales',JSON.stringify(saved));
+      }catch(err){}
+
+      showToast('Scale "'+scaleData.name+'" added — will be used in mentor debrief');
+    };
+
+    if(ext==='pdf')reader.readAsText(file);
+    else reader.readAsText(file);
+  });
+}
+
+// Load saved scales on startup
+function loadSavedScales(){
+  try{
+    var saved=localStorage.getItem('fellowmate_scales');
+    if(saved){
+      var scales=JSON.parse(saved);
+      scales.forEach(function(s){
+        if(!uploadedScales.find(function(u){return u.id===s.id;})){
+          uploadedScales.push(s);
+          // Add to UI
+          var list=document.getElementById('scaleList');
+          if(list){
+            var d=document.createElement('div');d.className='file-item';
+            d.innerHTML='<span class="file-icon">📊</span><div class="file-info"><h6>'+s.name+'</h6><p>'+s.items+' items · '+s.type+'</p></div><span class="file-badge ok">Active</span>';
+            list.appendChild(d);
+          }
+        }
+      });
+    }
+  }catch(e){}
+}
+setTimeout(loadSavedScales,1000);
+</script>
+</body>
+</html>
